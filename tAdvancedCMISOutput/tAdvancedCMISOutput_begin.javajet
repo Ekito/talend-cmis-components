@@ -1,0 +1,166 @@
+<%
+/*******************************************************************************
+ * Copyright (c) 2012 Julien Boulay - Ekito - www.ekito.fr.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v3.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/gpl.html
+ * 
+ * Contributors:
+ *     Julien Boulay - Ekito - www.ekito.fr - initial API and implementation
+ ******************************************************************************/
+%>
+<%@ jet 
+imports="
+    	org.talend.core.model.process.INode 
+    	org.talend.core.model.process.ElementParameterParser 
+		org.talend.core.model.metadata.IMetadataTable 
+		org.talend.core.model.metadata.IMetadataColumn
+		org.talend.designer.codegen.config.CodeGeneratorArgument
+		org.talend.core.model.process.IConnection
+		org.talend.core.model.process.IConnectionCategory
+		org.talend.core.model.metadata.types.JavaTypesManager
+		org.talend.core.model.metadata.types.JavaType		
+		java.util.List
+		java.util.Map
+		java.net.ProxySelector
+		java.util.HashMap
+		"
+%>
+<%
+	CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+	INode node = (INode)codeGenArgument.getArgument();
+	String cid = node.getUniqueName();
+    
+        //Test if some metadata exists. Otherwise, no java code generation
+    List<IMetadataTable> metadatas = node.getMetadataList();
+	if ((metadatas!=null)&&(metadatas.size()>0)) {//1
+    	IMetadataTable metadata = metadatas.get(0);
+    	if (metadata!=null) {//2
+    	
+	    	String cmisServerURL = ElementParameterParser.getValue(node, "__CMIS_SERVER_URL__");
+			String username = ElementParameterParser.getValue(node, "__CMIS_USER_LOGIN__");
+			String password = ElementParameterParser.getValue(node, "__CMIS_USER_PASSWORD__");
+			String repositoryId = ElementParameterParser.getValue(node, "__CMIS_REPOSITORY__");
+			String country = ElementParameterParser.getValue(node, "__COUNTRY_CONNECTION__");
+			String language = ElementParameterParser.getValue(node, "__LANGUAGE_CONNECTION__");
+			String timeout = ElementParameterParser.getValue(node, "__TIMEOUT_CONNECTION__");
+			String compression = ElementParameterParser.getValue(node, "__COMPRESSION__");
+			
+			String objectType = ElementParameterParser.getValue(node, "__OBJECT_TYPE__");  
+%>
+	            
+	int nb_line_<%=cid %> = 0;
+	java.util.Map<String, String> parameters_<%=cid %> = new java.util.HashMap<String, String>();
+	
+	// user credentials
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.USER, <%=username %>);
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.PASSWORD, <%=password %>);
+
+	// connection settings
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.ATOMPUB_URL, <%=cmisServerURL %>);
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.BINDING_TYPE,
+		org.apache.chemistry.opencmis.commons.enums.BindingType.ATOMPUB.value());
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.REPOSITORY_ID, <%=repositoryId %>);
+
+	// session locale
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.LOCALE_ISO3166_COUNTRY, <%=country %>);
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.LOCALE_ISO639_LANGUAGE, <%=language %>);
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.CONNECT_TIMEOUT, <%=timeout %>);
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.COMPRESSION, "<%=compression %>");
+	
+<%
+			boolean useProxy = Boolean.valueOf(ElementParameterParser.getValue(node, "__USE_PROXY__"));
+			
+			if (useProxy)
+			{//3
+				String proxyHost = ElementParameterParser.getValue(node, "__PROXY_HOST__");
+				String proxyPort = ElementParameterParser.getValue(node, "__PROXY_PORT__");
+				String proxyUser = ElementParameterParser.getValue(node, "__PROXY_USER__");
+				String proxyPassword = ElementParameterParser.getValue(node, "__PROXY_PASSWORD__");
+				
+				String proxyURL = "http://" + proxyHost + ":" + proxyPort;
+%>
+
+	public class CustomProxySelector extends ProxySelector {
+        ProxySelector defaultSelector = null;
+        CustomProxySelector(ProxySelector default) {
+                defaultSelector = default;
+        }
+        
+        public java.util.List<Proxy> select(URI uri) {
+                if (uri == null) {
+                        throw new IllegalArgumentException("URI can't be null.");
+                }
+                String protocol = uri.getScheme();
+                if ("http".equalsIgnoreCase(protocol) ||
+                        "https".equalsIgnoreCase(protocol)) {
+                        ArrayList<Proxy> proxies = new ArrayList<Proxy>();
+                        // Populate the ArrayList with proxies
+                        proxies.add(<%=proxyURL %>);
+                        
+                        return proxies;
+                }
+                if (defaultSelector != null) {
+                        return defaultSelector.select(uri);
+                } else {
+                        ArrayList<Proxy> proxies = new ArrayList<Proxy>();
+                        proxies.add(Proxy.NO_PROXY);
+                        return proxies;
+                }
+        }
+        
+        public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+        	defaultSelector.connectFailed(uri, sa, ioe);
+		}
+	}
+	
+	CustomProxySelector ps_<%=cid %> = new CustomProxySelector(ProxySelector.getDefault());
+    ProxySelector.setDefault(ps_<%=cid %>);
+    
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.PROXY_USER, <%=proxyUser %>);
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.PROXY_PASSWORD, <%=proxyPassword %>);
+	
+<%
+			}//3
+	
+%>
+	//Create a new CMIS session
+	org.apache.chemistry.opencmis.client.api.SessionFactory f_<%=cid %> = org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl.newInstance();
+	org.apache.chemistry.opencmis.client.api.Session session_<%=cid %> = f_<%=cid %>.createSession(parameters_<%=cid %>);
+	
+	//TODO Manage cache as an option in the component
+	//org.apache.chemistry.opencmis.client.api.OperationContext operationContext_<%=cid %> = session_<%=cid %>.createOperationContext();
+	//operationContext_<%=cid %>.setCacheEnabled(false);
+	
+	//Get the queryName for objectId property
+	org.apache.chemistry.opencmis.client.api.ObjectType type_<%=cid %> = session_<%=cid %>.getTypeDefinition("<%=objectType %>");
+	org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition<?> objectIdPropDef_<%=cid %> = type_<%=cid %>.getPropertyDefinitions().get(org.apache.chemistry.opencmis.commons.PropertyIds.OBJECT_ID);
+	String objectIdQueryName_<%=cid %> = objectIdPropDef_<%=cid %>.getQueryName();
+	
+<%
+			String targetFolder = ElementParameterParser.getValue(node, "__TARGET_FOLDER__");
+			
+			if (targetFolder.equals("DEFAULT"))
+			{
+				String targetFolderDefault = ElementParameterParser.getValue(node, "__TARGET_FOLDER_DEFAULT__");
+%>
+	//Get the target folder as it is a fixed value
+	String targetFolderPath_<%=cid %> = <%=targetFolderDefault %>;
+<%           
+			}
+
+			String contentFolder = ElementParameterParser.getValue(node, "__CONTENT_FOLDER__");
+			
+			if (contentFolder.equals("DEFAULT"))
+			{
+				String contentFolderDefault = ElementParameterParser.getValue(node, "__CONTENT_FOLDER_DEFAULT__");
+%>
+	//Get the target folder as it is a fixed value
+	String contentFolderPath_<%=cid %> = <%=contentFolderDefault %>;
+<%           
+			} 
+  		}//2
+	}//1
+%>
+    

@@ -1,0 +1,383 @@
+<%
+/*******************************************************************************
+ * Copyright (c) 2012 Julien Boulay - Ekito - www.ekito.fr.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v3.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/gpl.html
+ * 
+ * Contributors:
+ *     Julien Boulay - Ekito - www.ekito.fr - initial API and implementation
+ ******************************************************************************/
+%>
+<%@ jet 
+imports="
+    	org.talend.core.model.process.INode 
+    	org.talend.core.model.process.ElementParameterParser 
+		org.talend.core.model.metadata.IMetadataTable 
+		org.talend.core.model.metadata.IMetadataColumn
+		org.talend.designer.codegen.config.CodeGeneratorArgument
+		org.talend.core.model.process.IConnection
+		org.talend.core.model.process.IConnectionCategory
+		org.talend.core.model.metadata.types.JavaTypesManager
+		org.talend.core.model.metadata.types.JavaType		
+		java.util.List
+		java.util.Map
+		"
+%>
+<%
+	CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+	INode node = (INode)codeGenArgument.getArgument();
+	String function = ElementParameterParser.getValue(node, "__FUNCTION__");
+	List<Map<String, String>> propertyMappings = (List<Map<String,String>>)ElementParameterParser.getObjectValue(node, "__PROPERTY_MAPPING__");
+	
+	String objectType = ElementParameterParser.getValue(node, "__OBJECT_TYPE__");
+	String baseTypeId = ElementParameterParser.getValue(node, "__BASE_TYPE_ID__");
+	String contentFolder = ElementParameterParser.getValue(node, "__CONTENT_FOLDER__");
+	String targetFolder = ElementParameterParser.getValue(node, "__TARGET_FOLDER__");
+	
+	String contentFolderColumn = "";
+	
+	if (contentFolder.equals("COLUMN"))
+	{
+		contentFolderColumn = ElementParameterParser.getValue(node, "__CONTENT_FOLDER_COLUMN__");
+	}
+	
+	String targetFolderColumn = "";
+	if (targetFolder.equals("COLUMN"))
+	{
+		targetFolderColumn = ElementParameterParser.getValue(node, "__TARGET_FOLDER_COLUMN__");
+	}
+			
+	boolean uploadContent = Boolean.valueOf(ElementParameterParser.getValue(node, "__UPLOAD_CONTENT__"));
+	
+	// getting incoming connection and name
+    List<? extends IConnection> inConns = node.getIncomingConnections();
+	IConnection inConn = null;
+	String inConnName = null;
+	if(inConns != null && inConns.size()>0){
+	    inConn = inConns.get(0);
+	    inConnName = inConn.getName();
+	}
+	
+	//Init all outgoing connections data structure
+	List< ? extends IConnection> outConns = node.getOutgoingSortedConnections();
+	for (IConnection outConn : outConns)
+	{
+%>
+	<%=outConn.getName() %> = null;
+<%
+	
+	}
+
+    String cid = node.getUniqueName();
+	
+	if (inConn != null && inConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {//1
+						
+		IMetadataTable inMetadata = inConn.getMetadataTable();
+   		if (inMetadata!=null) {//2
+			
+			//Generates the query for existing data
+    		List<IMetadataColumn> inColumns = inMetadata.getListColumns();
+    		boolean keyExists = false;
+    		
+    		
+    		for(Map<String, String> propertyMapping : propertyMappings) {//checkMappingKey
+    			Boolean isKey = Boolean.valueOf(propertyMapping.get("KEY"));
+    			if (isKey)
+    			{
+    				keyExists = true;
+    			}
+    		}
+    		
+    		if (keyExists)
+    		{
+%>
+				java.lang.StringBuilder queryStatement_<%=cid %> = new java.lang.StringBuilder();
+				
+				queryStatement_<%=cid %>.append("SELECT ")
+					.append(objectIdQueryName_<%=cid %>)
+					.append(" FROM <%=objectType %> WHERE ");
+				
+<%    			
+				boolean predicateExists = false;
+				
+			    for(Map<String, String> propertyMapping : propertyMappings) {//3
+			        String schemaColumn = propertyMapping.get("COLUMN");
+			        String cmisPropertyID =  null;
+			        Boolean isKey = false;
+			        if (schemaColumn != null && schemaColumn.length() > 0) {
+			            cmisPropertyID = propertyMapping.get("ID");
+			            isKey = Boolean.valueOf(propertyMapping.get("KEY"));
+			        } 
+			        
+			        if(isKey)
+	    			{
+				        for (int i = 0; i < inColumns.size(); i++) {//4
+			  			
+		    				IMetadataColumn inColumn = inColumns.get(i);
+		    				
+		    				if (inColumn.getLabel().equals(schemaColumn)) { //5
+								JavaType javaType = JavaTypesManager.getJavaTypeFromId(inColumn.getTalendType());
+			
+								boolean isPrimitive = JavaTypesManager.isJavaPrimitiveType( javaType, inColumn.isNullable());
+								if(!isPrimitive) {
+%>   				
+	    		if(<%=inConn.getName() %>.<%=schemaColumn %> != null) {
+<%
+		    					}
+	    					
+	    						if (predicateExists)
+	    						{
+%>
+					queryStatement_<%=cid %>.append(" and ");
+<%
+								} else
+								{
+%>
+					queryStatement_<%=cid %>.append("<%=cmisPropertyID %> = '").append(<%=inConn.getName() %>.<%=schemaColumn %>).append("'");				
+<%
+								predicateExists = true;
+								}
+							
+								if(!isPrimitive) {
+%>
+		    	} 
+<%
+								}
+							}//Corresponding Metadata
+						}//For Each MetadataColumn
+					}//IsKey
+				}//For Each PropertyMapping
+			}//KeyExists
+%>
+		try
+		{
+			org.apache.chemistry.opencmis.client.api.CmisObject object_<%=cid %> = null;
+
+<%
+			if (keyExists)
+    		{
+%>
+			org.apache.chemistry.opencmis.client.api.ItemIterable<org.apache.chemistry.opencmis.client.api.QueryResult> results_<%=cid %> = session_<%=cid %>.query(queryStatement_<%=cid %>.toString(), false);
+				
+			if (results_<%=cid %>.getTotalNumItems() > 0)
+			{
+				
+<%			
+				//If CREATE mode only, an exception is thrown as the object already exists
+				if (function.equals("CREATE"))
+				{
+%>
+				throw new Exception("An object already exists with the following criteria :");
+<%
+				}else //Else get the records for update
+				{
+%>
+				if (results_<%=cid %>.getTotalNumItems() > 1)
+				{
+					throw new Exception("Two many objects (" + results_<%=cid %>.getTotalNumItems() + ") already exist with the following criteria :");
+				}
+				
+				for (org.apache.chemistry.opencmis.client.api.QueryResult result_<%=cid %> : results_<%=cid %>) {
+	
+					String objectId_<%=cid %> = result_<%=cid %>.getPropertyValueByQueryName(objectIdQueryName_<%=cid %>);;
+					object_<%=cid %> = session_<%=cid %>.getObject(session_<%=cid %>.createObjectId(objectId_<%=cid %>));
+				}
+					
+<%
+				}
+%>
+			}
+<%
+			}//keyExists
+%>
+				
+			//Initialize the properties for the cmisObject
+			//being created/updated
+			java.util.Map<String, Object> properties_<%=cid %> = new java.util.HashMap<String, Object>();
+			
+			//Add the objectType
+			properties_<%=cid %>.put(org.apache.chemistry.opencmis.commons.PropertyIds.OBJECT_TYPE_ID, "<%=objectType %>");
+<%
+			
+		    for(Map<String, String> propertyMapping : propertyMappings) {//6
+		        String schemaColumn = propertyMapping.get("COLUMN");
+		        String cmisPropertyID =  null;
+		        Boolean isKey = false;
+		        if (schemaColumn != null && schemaColumn.length() > 0) {
+		            cmisPropertyID = propertyMapping.get("ID");
+		            isKey = Boolean.valueOf(propertyMapping.get("KEY"));
+		        } 
+		        
+		        for (int i = 0; i < inColumns.size(); i++) {//7
+	  			
+    				IMetadataColumn inColumn = inColumns.get(i);
+    				
+    				if (inColumn.getLabel().equals(schemaColumn)) { //8
+						JavaType javaType = JavaTypesManager.getJavaTypeFromId(inColumn.getTalendType());
+	
+						boolean isPrimitive = JavaTypesManager.isJavaPrimitiveType( javaType, inColumn.isNullable());
+						
+						if(!isPrimitive) {
+%>   				
+	    		if(<%=inConn.getName() %>.<%=schemaColumn %> != null) {
+	    		
+<%
+	    				}
+%>              
+                	properties_<%=cid %>.put("<%=cmisPropertyID %>",    						
+<%
+						String pattern = inColumn.getPattern() == null || inColumn.getPattern().trim().length() == 0 ? null : inColumn.getPattern();
+						if (javaType == JavaTypesManager.DATE && pattern != null && pattern.trim().length() != 0) {//Date
+%>
+						FormatterUtils.format_Date(<%=inConn.getName() %>.<%=schemaColumn %>, <%= pattern %>)
+<%				
+						} else if (javaType == JavaTypesManager.BYTE_ARRAY) {//byte[]
+%>
+						java.nio.charset.Charset.defaultCharset().decode(java.nio.ByteBuffer.wrap(<%=inConn.getName() %>.<%=schemaColumn %>)).toString()
+<%				
+						} else {//others
+%>
+						String.valueOf(<%=inConn.getName() %>.<%=schemaColumn %>)
+<%				
+						}
+%>
+					    );	
+						
+<%
+						
+						if(!isPrimitive) {
+%>
+		    	} 
+<%
+						}
+%>
+
+<%
+					}//8
+				}//7
+			}//6
+
+			if(function.equals("CREATE")){
+					//The target folder is recorded in the flow 
+					if (targetFolder.equals("COLUMN"))
+					{
+%>
+			//The target folder is coming from the data flow
+			String targetFolderPath_<%=cid %> = "";
+			if(<%=inConn.getName() %>.<%=targetFolderColumn %> != null) {
+				targetFolderPath_<%=cid %> = <%=inConn.getName() %>.<%=targetFolderColumn %>;
+			}
+<%
+					}
+%>
+			org.apache.chemistry.opencmis.client.api.Folder targetFolder_<%=cid %> = null;
+			targetFolder_<%=cid %> = (org.apache.chemistry.opencmis.client.api.Folder)session_<%=cid %>.getObjectByPath(targetFolderPath_<%=cid %>);
+
+<%
+				if(baseTypeId.equals("cmis:document")){
+%>
+
+			//Manage the content upload
+			String contentStreamFileName_<%=cid %> = (String)properties_<%=cid %>.get(org.apache.chemistry.opencmis.commons.PropertyIds.CONTENT_STREAM_FILE_NAME);
+			String contentStreamFilePath_<%=cid %> = null;
+
+			if (contentStreamFileName_<%=cid %> != null)
+			{
+
+<%
+					//The content folder is recorded in the flow 
+					if (contentFolder.equals("COLUMN"))
+					{
+%>
+				String contentFolderPath_<%=cid %> = "";
+				if(<%=inConn.getName() %>.<%=contentFolderColumn %> != null) {
+					contentFolderPath_<%=cid %> = <%=inConn.getName() %>.<%=contentFolderColumn %>;
+				}
+<%
+					}
+%>
+				
+				contentStreamFilePath_<%=cid %> = contentFolderPath_<%=cid %> + "/" + contentStreamFileName_<%=cid %>;
+			}
+			
+			org.apache.chemistry.opencmis.commons.data.ContentStream contentStream_<%=cid %> = null;
+			
+			if (contentStreamFilePath_<%=cid %> != null)
+			{
+				java.io.File contentFile_<%=cid %> = new java.io.File(contentStreamFilePath_<%=cid %>);
+				
+				java.net.FileNameMap fileNameMap_<%=cid %> = java.net.URLConnection.getFileNameMap();
+      			String mimetype_<%=cid %> = fileNameMap_<%=cid %>.getContentTypeFor(contentStreamFilePath_<%=cid %>);
+      
+				java.io.FileInputStream contentFileInputStream_<%=cid %> = new java.io.FileInputStream(contentFile_<%=cid %>);
+				long length = contentFile_<%=cid %>.length();
+				contentStream_<%=cid %> = session_<%=cid %>.getObjectFactory()
+					.createContentStream(contentStreamFileName_<%=cid %>,
+						length,
+						mimetype_<%=cid %>,
+						contentFileInputStream_<%=cid %>);
+			}
+			
+			targetFolder_<%=cid %>.createDocument(properties_<%=cid %>, contentStream_<%=cid %>, org.apache.chemistry.opencmis.commons.enums.VersioningState.MAJOR);
+			nb_line_<%=cid %>++;
+<%
+				}else if (baseTypeId.equals("cmis:folder")){
+%>
+			targetFolder_<%=cid %>.createFolder(properties_<%=cid %>);
+			nb_line_<%=cid %>++;
+<%
+				}
+			}else if(function.equals("UPDATE")){
+%>
+			object_<%=cid %>.updateProperties(properties_<%=cid %>);
+			nb_line_<%=cid %>++;
+<%
+			}else if(function.equals("CREATE_OR_UPDATE")){
+%>
+			nb_line_<%=cid %>++;
+<%
+			}
+			
+			
+	    	IConnection firstOutConn = null;
+			String firstOutConnName = null;
+			if (outConns!=null) {//1
+				if (outConns.size()>0) {
+					firstOutConn = outConns.get(0); //the first connection
+					firstOutConnName = firstOutConn.getName();
+				}
+			}
+			
+    		if (firstOutConn != null && firstOutConnName != null && firstOutConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+    			
+				IMetadataTable outMetadata = firstOutConn.getMetadataTable();
+				if (outMetadata != null) {
+%>
+			<%=firstOutConnName%> = new <%=firstOutConnName%>Struct();
+<%
+		    		List<IMetadataColumn> outColumns = outMetadata.getListColumns();
+		    		int sizeOutColumns = outColumns.size();
+		    		
+		    		//The output schema corresponds to the input schema. Just copy the value in output
+			        for ( IMetadataColumn outColumn : outColumns) {
+%>
+			<%=firstOutConnName%>.<%=outColumn.getLabel()%> = <%=inConnName%>.<%=outColumn.getLabel()%>;
+<%
+					}
+				}
+    		}
+	    		
+%>
+    			
+    	} catch (Exception mainEx_<%=cid%>) {
+	    
+			// handling exception as standard output
+			mainEx_<%=cid%>.printStackTrace();
+            
+	    }
+<%
+   		}//2
+	}//1
+%>

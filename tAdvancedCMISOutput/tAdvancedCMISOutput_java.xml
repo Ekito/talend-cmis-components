@@ -1,0 +1,227 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/*******************************************************************************
+ * Copyright (c) 2012 Julien Boulay - Ekito - www.ekito.fr.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v3.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/gpl.html
+ * 
+ * Contributors:
+ *     Julien Boulay - Ekito - www.ekito.fr - initial API and implementation
+ ******************************************************************************/
+-->
+<COMPONENT>
+
+	<HEADER PLATEFORM="ALL" SERIAL="" VERSION="0.1.1" STATUS="ALPHA"
+		COMPATIBILITY="ALL" AUTHOR="Julien Boulay - www.ekito.fr"
+		RELEASE_DATE="20121219" STARTABLE="false" DATA_AUTO_PROPAGATE="true"
+		HAS_CONDITIONAL_OUTPUTS="true" EXTENSION="org.talend.designer.cmis">
+		<SIGNATURE />
+	</HEADER>
+
+	<FAMILIES>
+		<FAMILY>Business/CMIS</FAMILY>
+	</FAMILIES>
+
+	<DOCUMENTATION>
+		<URL />
+	</DOCUMENTATION>
+
+	<CONNECTORS>
+		<CONNECTOR CTYPE="FLOW" MAX_INPUT="1" MAX_OUTPUT="1" />
+		<CONNECTOR NAME="REJECT" CTYPE="FLOW" MAX_INPUT="0"
+			MAX_OUTPUT="1" LINE_STYLE="2" COLOR="FF0000" />
+		<CONNECTOR CTYPE="ITERATE" MAX_OUTPUT="1" MAX_INPUT="1" />
+		<CONNECTOR CTYPE="SUBJOB_OK" MAX_INPUT="1" />
+		<CONNECTOR CTYPE="SUBJOB_ERROR" MAX_INPUT="1" />
+		<CONNECTOR CTYPE="COMPONENT_OK" />
+		<CONNECTOR CTYPE="COMPONENT_ERROR" />
+		<CONNECTOR CTYPE="RUN_IF" />
+	</CONNECTORS>
+
+	<PARAMETERS>
+
+		<PARAMETER NAME="CMIS_SERVER_URL" FIELD="TEXT" NUM_ROW="10"
+			REQUIRED="true" GROUP="CMIS_SERVER_GROUP">
+			<DEFAULT>"http://localhost:80/nuxeo/atom/cmis"</DEFAULT>
+		</PARAMETER>
+
+		<PARAMETER NAME="CMIS_USER_LOGIN" FIELD="TEXT" NUM_ROW="20"
+			REQUIRED="true" GROUP="CMIS_SERVER_GROUP">
+			<DEFAULT>"Administrator"</DEFAULT>
+		</PARAMETER>
+
+		<PARAMETER NAME="CMIS_USER_PASSWORD" FIELD="TEXT" NUM_ROW="20"
+			REQUIRED="true" GROUP="CMIS_SERVER_GROUP">
+			<DEFAULT>"Administrator"</DEFAULT>
+		</PARAMETER>
+
+		<PARAMETER NAME="CMIS_REPOSITORY" FIELD="TEXT" REQUIRED="true"
+			NUM_ROW="30" GROUP="CMIS_SERVER_GROUP">
+			<DEFAULT>"default"</DEFAULT>
+		</PARAMETER>
+
+		<PARAMETER NAME="OBJECT_TYPE" FIELD="EXTERNAL"
+			NUM_ROW="40" GROUP="FUNCTION_GROUP">
+			<DEFAULT />
+		</PARAMETER>
+		
+		<!-- Hidden parameters -->
+		<PARAMETER NAME="BASE_TYPE_ID" FIELD="CLOSED_LIST" NUM_ROW="45"
+			SHOW="false" GROUP="FUNCTION_GROUP">
+			<ITEMS DEFAULT="DOCUMENT">
+				<ITEM NAME="DOCUMENT" VALUE="cmis:document" />
+				<ITEM NAME="FOLDER" VALUE="cmis:folder" />
+				<ITEM NAME="RELATIONSHIP" VALUE="cmis:relationship" />
+			</ITEMS>
+		</PARAMETER>
+
+		<!-- Closed list with the cmis functions -->
+		<PARAMETER NAME="FUNCTION" FIELD="CLOSED_LIST" NUM_ROW="50"
+			REQUIRED="true" GROUP="FUNCTION_GROUP">
+			<ITEMS DEFAULT="CREATE">
+				<ITEM NAME="CREATE" VALUE="CREATE" />
+				<ITEM NAME="UPDATE" VALUE="UPDATE" />
+				<ITEM NAME="CREATE_OR_UPDATE" VALUE="CREATE_OR_UPDATE" />
+			</ITEMS>
+		</PARAMETER>
+
+		
+		<PARAMETER NAME="CONTENT_FOLDER" FIELD="CLOSED_LIST" NUM_ROW="60"
+			REQUIRED="false" GROUP="FUNCTION_GROUP" SHOW_IF="(BASE_TYPE_ID=='DOCUMENT')">
+			<ITEMS DEFAULT="DEFAULT">
+				<ITEM NAME="DEFAULT" VALUE="DEFAULT" />
+				<ITEM NAME="COLUMN" VALUE="COLUMN" />
+			</ITEMS>
+		</PARAMETER>
+
+		<PARAMETER NAME="CONTENT_FOLDER_DEFAULT" FIELD="DIRECTORY" NUM_ROW="60"
+			REQUIRED="true" GROUP="FUNCTION_GROUP" SHOW_IF="(BASE_TYPE_ID=='DOCUMENT') and (CONTENT_FOLDER=='DEFAULT')">
+			<DEFAULT>""</DEFAULT>
+		</PARAMETER>
+
+		<PARAMETER NAME="CONTENT_FOLDER_COLUMN" FIELD="COLUMN_LIST" NUM_ROW="60"
+			REQUIRED="true" GROUP="FUNCTION_GROUP" SHOW_IF="(BASE_TYPE_ID=='DOCUMENT') and (CONTENT_FOLDER=='COLUMN')">
+			<DEFAULT>""</DEFAULT>
+		</PARAMETER>
+
+		<PARAMETER NAME="TARGET_FOLDER" FIELD="CLOSED_LIST" NUM_ROW="70"
+			REQUIRED="false" GROUP="FUNCTION_GROUP">
+			<ITEMS DEFAULT="DEFAULT">
+				<ITEM NAME="DEFAULT" VALUE="DEFAULT" />
+				<ITEM NAME="COLUMN" VALUE="COLUMN" />
+			</ITEMS>
+		</PARAMETER>
+		
+		<PARAMETER NAME="TARGET_FOLDER_DEFAULT" FIELD="TEXT" NUM_ROW="70"
+			REQUIRED="true" GROUP="FUNCTION_GROUP" SHOW_IF="TARGET_FOLDER=='DEFAULT'">
+			<DEFAULT>""</DEFAULT>
+		</PARAMETER>
+				
+		<PARAMETER NAME="TARGET_FOLDER_COLUMN" FIELD="COLUMN_LIST" NUM_ROW="70"
+			REQUIRED="true" GROUP="FUNCTION_GROUP" SHOW_IF="TARGET_FOLDER=='COLUMN'">
+			<DEFAULT/>
+		</PARAMETER>
+		
+		<PARAMETER NAME="PROPERTY_MAPPING" FIELD="TABLE" NUM_ROW="100" NB_LINES="10" GROUP="PROPERTY_MAPPING_GROUP" REQUIRED="true"
+			SHOW="true">
+			<ITEMS>
+				<ITEM NAME="ID" FIELD="TEXT" READONLY="true" />
+				<ITEM NAME="NAME" FIELD="TEXT" READONLY="true" />
+				<ITEM NAME="TYPE" FIELD="TEXT" READONLY="true" />
+				<ITEM NAME="MANDATORY" FIELD="CHECK" READONLY="true" />
+				<ITEM NAME="DEFAULT" FIELD="TEXT" READONLY="true" />
+				<ITEM NAME="KEY" FIELD="CHECK" />
+				<ITEM NAME="COLUMN" FIELD="COLUMN_LIST" />
+			</ITEMS>
+		</PARAMETER>
+
+		<PARAMETER NAME="SCHEMA_FLOW" FIELD="SCHEMA_TYPE" NUM_ROW="200"
+			REQUIRED="true">
+			<DEFAULT>""</DEFAULT>
+		</PARAMETER>
+
+		<PARAMETER NAME="SCHEMA_REJECT" FIELD="SCHEMA_TYPE"
+			REQUIRED="true" NUM_ROW="210" CONTEXT="REJECT" SHOW="true">
+			<TABLE READONLY="true">
+				<COLUMN NAME="errorCode" TYPE="id_String" LENGTH="255" READONLY="false" CUSTOM="true"/>
+				<COLUMN NAME="errorMessage" TYPE="id_String" LENGTH="255" READONLY="false" CUSTOM="true"/>
+			</TABLE>
+		</PARAMETER>
+		
+	</PARAMETERS>
+
+	<!--  Advanced parameters -->
+	<ADVANCED_PARAMETERS>
+
+		<PARAMETER NAME="COUNTRY_CONNECTION" FIELD="TEXT" REQUIRED="false"
+			NUM_ROW="10" GROUP="ADVANCED_CONNECTION_GROUP">
+			<DEFAULT>""</DEFAULT>
+		</PARAMETER>
+
+		<PARAMETER NAME="LANGUAGE_CONNECTION" FIELD="TEXT" REQUIRED="false"
+			NUM_ROW="20" GROUP="ADVANCED_CONNECTION_GROUP">
+			<DEFAULT>"us"</DEFAULT>
+		</PARAMETER>
+
+		<PARAMETER NAME="TIMEOUT_CONNECTION" FIELD="TEXT" REQUIRED="false"
+			NUM_ROW="30" GROUP="ADVANCED_CONNECTION_GROUP">
+			<DEFAULT>"10000"</DEFAULT>
+		</PARAMETER>
+
+		<PARAMETER NAME="COMPRESSION" FIELD="CHECK" REQUIRED="false"
+			NUM_ROW="40" GROUP="ADVANCED_CONNECTION_GROUP">
+			<DEFAULT></DEFAULT>
+		</PARAMETER>
+
+	</ADVANCED_PARAMETERS>
+
+	<CODEGENERATION>
+		<IMPORTS>
+			<IMPORT NAME="activation" MODULE="activation-1.1.jar"
+				REQUIRED="true" />
+			<IMPORT NAME="chemistry-opencmis-client-api"
+				MODULE="chemistry-opencmis-client-api-0.7.0.jar" REQUIRED="true" />
+			<IMPORT NAME="chemistry-opencmis-client-bindings"
+				MODULE="chemistry-opencmis-client-bindings-0.7.0.jar"
+				REQUIRED="true" />
+			<IMPORT NAME="chemistry-opencmis-client-impl"
+				MODULE="chemistry-opencmis-client-impl-0.7.0.jar" REQUIRED="true" />
+			<IMPORT NAME="chemistry-opencmis-commons-api"
+				MODULE="chemistry-opencmis-commons-api-0.7.0.jar" REQUIRED="true" />
+			<IMPORT NAME="chemistry-opencmis-commons-impl"
+				MODULE="chemistry-opencmis-commons-impl-0.7.0.jar"
+				REQUIRED="true" />
+			<IMPORT NAME="commons-codec" MODULE="commons-codec-1.4.jar"
+				REQUIRED="true" />
+			<IMPORT NAME="commons-logging" MODULE="commons-logging-1.1.1.jar"
+				REQUIRED="true" />
+			<IMPORT NAME="jaxb-api" MODULE="jaxb-api-2.1.jar" REQUIRED="true" />
+			<IMPORT NAME="jaxb-impl" MODULE="jaxb-impl-2.1.11.jar"
+				REQUIRED="true" />
+			<IMPORT NAME="jaxws-api" MODULE="jaxws-api-2.1.jar" REQUIRED="true" />
+			<IMPORT NAME="jaxws-rt" MODULE="jaxws-rt-2.1.7.jar" REQUIRED="true" />
+			<IMPORT NAME="jsr181-api" MODULE="jsr181-api-1.0-MR1.jar" REQUIRED="true" />
+			<IMPORT NAME="jsr250-api" MODULE="jsr250-api-1.0.jar" REQUIRED="true" />
+			<IMPORT NAME="mimepull" MODULE="mimepull-1.3.jar" REQUIRED="true" />
+			<IMPORT NAME="osgi" MODULE="org.osgi.core-1.0.0.jar" REQUIRED="true" />
+			<IMPORT NAME="resolver" MODULE="resolver-20050927.jar"
+				REQUIRED="true" />
+			<IMPORT NAME="saaj-api" MODULE="saaj-api-1.3.jar" REQUIRED="true" />
+			<IMPORT NAME="saaj-impl" MODULE="saaj-impl-1.3.3.jar"
+				REQUIRED="true" />
+      		<IMPORT NAME="stax-api" MODULE="stax-api-1.0.1.jar" REQUIRED="true" />
+			<IMPORT NAME="stax-api" MODULE="stax-api-1.0.jar" REQUIRED="true" />
+			<IMPORT NAME="stax-ex" MODULE="stax-ex-1.2.jar" REQUIRED="true" />
+			<IMPORT NAME="streambuffer" MODULE="streambuffer-0.9.jar"
+				REQUIRED="true" />
+			<IMPORT NAME="wstx-asl" MODULE="wstx-asl-3.2.3.jar" REQUIRED="true" />
+		</IMPORTS>
+	</CODEGENERATION>
+
+
+	<RETURNS>
+		<RETURN NAME="NB_LINE" TYPE="id_Integer" AVAILABILITY="AFTER" />
+	</RETURNS>
+</COMPONENT>

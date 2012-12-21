@@ -1,0 +1,355 @@
+<%
+/*******************************************************************************
+ * Copyright (c) 2012 Julien Boulay - Ekito - www.ekito.fr.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v3.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/gpl.html
+ * 
+ * Contributors:
+ *     Julien Boulay - Ekito - www.ekito.fr - initial API and implementation
+ ******************************************************************************/
+%>
+<%@ jet 
+imports="
+    	org.talend.core.model.process.INode 
+    	org.talend.core.model.process.ElementParameterParser 
+		org.talend.core.model.metadata.IMetadataTable 
+		org.talend.core.model.metadata.IMetadataColumn
+		org.talend.designer.codegen.config.CodeGeneratorArgument
+		org.talend.core.model.process.IConnection
+		org.talend.core.model.process.IConnectionCategory
+		org.talend.core.model.metadata.types.JavaTypesManager
+		org.talend.core.model.metadata.types.JavaType		
+		java.util.List
+		java.util.Map
+		java.util.HashMap
+		"
+%>
+<%
+	CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+	INode node = (INode)codeGenArgument.getArgument();
+	String cid = node.getUniqueName();
+        
+    String cmisServerURL = ElementParameterParser.getValue(node, "__CMIS_SERVER_URL__");
+	String username = ElementParameterParser.getValue(node, "__CMIS_USER_LOGIN__");
+	String password = ElementParameterParser.getValue(node, "__CMIS_USER_PASSWORD__");
+	String repositoryId = ElementParameterParser.getValue(node, "__CMIS_REPOSITORY__");
+	String country = ElementParameterParser.getValue(node, "__COUNTRY_CONNECTION__");
+	String language = ElementParameterParser.getValue(node, "__LANGUAGE_CONNECTION__");
+	String timeout = ElementParameterParser.getValue(node, "__TIMEOUT_CONNECTION__");
+	String compression = ElementParameterParser.getValue(node, "__COMPRESSION__");
+	boolean downloadContent = Boolean.valueOf(ElementParameterParser.getValue(node, "__DOWNLOAD_CONTENT__"));
+	String contentPath = null;
+
+	if (downloadContent)
+	{
+		contentPath = ElementParameterParser.getValue(node, "__CONTENT_PATH__");
+%>
+	class ContentManager {
+		public void extractCMISObjectContent(org.apache.chemistry.opencmis.client.api.CmisObject cmisObject, String contentPath)
+		{
+			if (cmisObject instanceof org.apache.chemistry.opencmis.client.api.Document)
+			{
+				org.apache.chemistry.opencmis.client.api.Document cmisDocument = (org.apache.chemistry.opencmis.client.api.Document) cmisObject;
+				extractDocumentContent(cmisDocument, contentPath);
+			}
+			else if (cmisObject instanceof org.apache.chemistry.opencmis.client.api.Folder)
+			{
+				org.apache.chemistry.opencmis.client.api.Folder cmisFolder = (org.apache.chemistry.opencmis.client.api.Folder) cmisObject;
+				org.apache.chemistry.opencmis.client.api.ItemIterable<org.apache.chemistry.opencmis.client.api.CmisObject> childrens = cmisFolder.getChildren();
+	
+				//Read the document list of the folder and download the content
+				for (java.util.Iterator<org.apache.chemistry.opencmis.client.api.CmisObject> childIterator = childrens.iterator(); childIterator.hasNext();) {
+	
+	
+					org.apache.chemistry.opencmis.client.api.CmisObject childObject = (org.apache.chemistry.opencmis.client.api.CmisObject) childIterator.next();
+	
+					if (childObject instanceof org.apache.chemistry.opencmis.client.api.Document)
+					{
+						org.apache.chemistry.opencmis.client.api.Document cmisDocument = (org.apache.chemistry.opencmis.client.api.Document) childObject;
+						extractDocumentContent(cmisDocument, contentPath);
+						//TODO : add "download content recursively" option and download content for subfolders
+	
+					}
+				}
+			}
+		}
+		
+		public void extractDocumentContent(org.apache.chemistry.opencmis.client.api.Document cmisDocument, String contentPath)
+		{
+			String filename = cmisDocument.getContentStreamFileName();
+			
+			//Test if filename is not null, else this document has not content
+			if (filename != null)
+			{
+				java.io.InputStream inputStream = cmisDocument.getContentStream().getStream();
+				java.io.OutputStream outputStream = null;
+				try
+				{
+					outputStream = new java.io.FileOutputStream(contentPath + "/" + filename);
+					byte buf[]=new byte[1024];
+					int len;
+					while((len = inputStream.read(buf))>0)
+						outputStream.write(buf, 0, len);
+					outputStream.close();
+					inputStream.close();
+				}catch (IOException e)
+				{
+					try {
+						if (outputStream != null)
+							outputStream.close();
+							
+						inputStream.close();
+					}catch (IOException e1)
+					{
+						e1.printStackTrace();
+					}
+					throw new RuntimeException(e);
+				}
+			}
+		}
+	}
+	
+	ContentManager contentManager_<%=cid %> = new ContentManager();
+<%
+	}
+	
+    //Test if some metadata exists. Otherwise, no java code generation
+    List<IMetadataTable> metadatas = node.getMetadataList();
+	if ((metadatas!=null)&&(metadatas.size()>0)) {//1
+    	IMetadataTable metadata = metadatas.get(0);
+    	if (metadata!=null) {//2		
+%>
+
+	int nb_line_<%=cid %> = 0;
+	java.util.Map<String, String> parameters_<%=cid %> = new java.util.HashMap<String, String>();
+	
+	// user credentials
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.USER, <%=username %>);
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.PASSWORD, <%=password %>);
+
+	// connection settings
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.ATOMPUB_URL, <%=cmisServerURL %>);
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.BINDING_TYPE,
+		org.apache.chemistry.opencmis.commons.enums.BindingType.ATOMPUB.value());
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.REPOSITORY_ID, <%=repositoryId %>);
+
+	// session locale
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.LOCALE_ISO3166_COUNTRY, <%=country %>);
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.LOCALE_ISO639_LANGUAGE, <%=language %>);
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.CONNECT_TIMEOUT, <%=timeout %>);
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.COMPRESSION, "<%=compression %>");
+	
+	//Create a new CMIS session
+	org.apache.chemistry.opencmis.client.api.SessionFactory f_<%=cid %> = org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl.newInstance();
+	org.apache.chemistry.opencmis.client.api.Session session_<%=cid %> = f_<%=cid %>.createSession(parameters_<%=cid %>);
+<%
+
+		}//2
+	}//1
+	List< ? extends IConnection> conns = node.getOutgoingSortedConnections();
+	
+	// getting reject connection columnList and name
+	IConnection rejectConn = null;
+	String rejectConnName = null;
+	List<? extends IConnection> rejectConns = node.getOutgoingConnections("REJECT");
+	
+	if(rejectConns != null && rejectConns.size() > 0) {
+	    rejectConn = rejectConns.get(0);
+	    rejectConnName = rejectConn.getName();
+	}
+	
+	List<IMetadataColumn> rejectColumns = null;
+	IMetadataTable metadataTable = node.getMetadataFromConnector("REJECT");
+	if(metadataTable != null) {
+	    rejectColumns = metadataTable.getListColumns();      
+	}
+	
+	IConnection firstConn = null;
+	String firstConnName = "";
+	List<? extends IConnection> mainConns = node.getMainOutgoingConnections();
+	
+	if(mainConns != null && mainConns.size() > 0) {
+	    firstConn = mainConns.get(0);
+	    firstConnName = firstConn.getName();
+	}
+	
+	if (firstConnName != null)
+	{
+%>
+	<%=firstConnName %> = null;
+<%
+	}
+	if (rejectConnName != null)
+	{
+%>
+	<%=rejectConnName %> = null;
+<%
+	}
+
+	if ( ( metadatas != null ) && ( metadatas.size() > 0 ) ) {//4
+	    IMetadataTable metadata = metadatas.get(0);
+	    if (metadata!=null) {//5    
+	    	
+	    	List<Map<String, String>> propertyMappings = (List<Map<String,String>>)ElementParameterParser.getObjectValue(node, "__PROPERTY_MAPPING__");
+	
+			Map<String, String> inputMapping = new HashMap<String, String>();
+			Map<String, String> cmisPropertyTypeMapping = new HashMap<String, String>();
+			
+			for (Map<String,String> propertyMapping : propertyMappings)
+			{
+				String cmisPropertyId = propertyMapping.get("ID");
+				String schemaPropertyId = propertyMapping.get("COLUMN");
+				String cmisPropertyType = propertyMapping.get("TYPE");
+				inputMapping.put(schemaPropertyId, cmisPropertyId);
+				cmisPropertyTypeMapping.put(cmisPropertyId,cmisPropertyType);
+			}
+			
+	    	String query = ElementParameterParser.getValue(node, "__QUERY__");
+	    	
+	   
+%>
+            
+	org.apache.chemistry.opencmis.client.api.ItemIterable<org.apache.chemistry.opencmis.client.api.QueryResult> results_<%=cid %> = null;
+		
+	try
+	{
+		results_<%=cid %> = session_<%=cid %>.query(<%=query %>, true);
+		
+	} catch (Exception mainEx_<%=cid%>) { // end reject exception handling
+	    
+<%
+	        // handling exception as reject connection or std err
+	        if(rejectConnName != null && rejectColumns != null && rejectColumns.size() > 0) {
+%>
+	    <%=rejectConnName %> = new <%=rejectConnName %>Struct();
+	    
+	    <%=rejectConnName%>.errorOrigin = <%=query %>;
+	    <%=rejectConnName%>.errorMessage = mainEx_<%=cid%>.getMessage();
+	    <%=rejectConnName%>.errorCode = "";
+<%
+            } else {
+%>
+        // handling exception as std err
+        System.err.println(mainEx_<%=cid%>.getMessage());
+<%
+            }
+%>
+            
+	}
+	
+	//Read the retrieved record
+	for (java.util.Iterator<org.apache.chemistry.opencmis.client.api.QueryResult> resultIterator_<%=cid %> = results_<%=cid%>.iterator(); resultIterator_<%=cid %>.hasNext();) {
+	
+		org.apache.chemistry.opencmis.client.api.QueryResult result_<%=cid %> = (org.apache.chemistry.opencmis.client.api.QueryResult) resultIterator_<%=cid %>.next();
+		nb_line_<%=cid %>++;
+
+        <%=firstConnName %> = new <%=firstConnName %>Struct();
+		org.apache.chemistry.opencmis.commons.data.PropertyData<?> propertyData_<%=cid %> = null;
+<%
+					
+			if (firstConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {//6
+		
+				List<IMetadataColumn> columns=metadata.getListColumns();
+				int columnSize = columns.size();
+				for (int i=0;i<columnSize;i++) {//7
+					IMetadataColumn column=columns.get(i);
+					String typeToGenerate = JavaTypesManager.getTypeToGenerate(column.getTalendType(), column.isNullable());
+					JavaType javaType = JavaTypesManager.getJavaTypeFromId(column.getTalendType());
+					String patternValue = column.getPattern() == null || column.getPattern().trim().length() == 0 ? null : column.getPattern();
+					
+					String cmisPropertyName = inputMapping.get(column.getLabel());
+					String cmisPropertyType = cmisPropertyTypeMapping.get(cmisPropertyName);
+
+					if (cmisPropertyName != null) {
+%>
+		            			 
+		propertyData_<%=cid %> = result_<%=cid %>.getPropertyById("<%=cmisPropertyName %>");
+		
+		if (propertyData_<%=cid %> != null){
+			
+			Object propertyValue_<%=cid %> = propertyData_<%=cid %>.getFirstValue();
+			if (propertyValue_<%=cid %> != null){
+<%
+					if(javaType == JavaTypesManager.STRING || javaType == JavaTypesManager.OBJECT) { //String or Object
+%>
+				<%=firstConnName %>.<%=column.getLabel() %> = propertyValue_<%=cid %>.toString();
+<%
+					} else if(javaType == JavaTypesManager.DATE) { //Date
+						if (cmisPropertyType.equals("datetime"))
+						{
+%>
+				<%=firstConnName %>.<%=column.getLabel() %> = ((java.util.Calendar)propertyValue_<%=cid %>).getTime();
+<%
+						} else
+						{
+%>
+				<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_Date((String)propertyValue_<%=cid %>, <%= patternValue %>);
+<%
+						}
+					} else if(javaType == JavaTypesManager.BYTE_ARRAY) { //byte[]
+%>
+				<%=firstConnName %>.<%=column.getLabel() %> = util_<%=cid %>.getFieldbyOrder((String)propertyValue_<%=cid %>).getBytes();
+<%
+					} else { //other
+%>				
+				<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_<%= typeToGenerate %>((String)propertyValue_<%=cid %>);
+<%
+					}
+%>
+			}else{
+				<%=firstConnName %>.<%=column.getLabel() %> = null;
+			}
+		}else{
+<%
+					}//End if (cmisPropertyName != null) 
+%>
+		
+			//Fill the property with its default value
+			<%=firstConnName %>.<%=column.getLabel() %> = <%=JavaTypesManager.getDefaultValueFromJavaType(typeToGenerate)%>;
+<%
+					if (cmisPropertyName != null) { 
+%>
+		}
+<%
+					}//End if (cmisPropertyName != null) 
+%>
+					
+					
+<%
+				} //7
+			}//6
+				
+				
+			if (conns.size()>1) {
+				for (int i=1;i<conns.size();i++) {
+					IConnection conn2 = conns.get(i);
+					if ((conn2.getName().compareTo(firstConnName)!=0)&&(conn2.getName().compareTo(rejectConnName)!=0)
+					&&(conn2.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA))) {
+				    	for (IMetadataColumn column: metadata.getListColumns()) {
+%>
+	      			<%=conn2.getName() %>.<%=column.getLabel() %> = <%=firstConnName %>.<%=column.getLabel() %>;
+<%
+					 	}
+					}
+				}
+			}
+						
+			if (downloadContent)
+			{//8
+			
+%>
+		//Save the document content
+		propertyData_<%=cid %> = result_<%=cid %>.getPropertyById("cmis:objectId");
+		String objectIdString_<%=cid %> = (String)propertyData_<%=cid %>.getFirstValue();
+		org.apache.chemistry.opencmis.client.api.ObjectId objectId_<%=cid %> = session_<%=cid %>.createObjectId(objectIdString_<%=cid %>);
+		org.apache.chemistry.opencmis.client.api.CmisObject cmisObject_<%=cid %> = session_<%=cid %>.getObject(objectId_<%=cid %>);
+		
+		contentManager_<%=cid %>.extractCMISObjectContent(cmisObject_<%=cid %>, <%=contentPath %>);
+<%				
+			}//8
+  		}//5
+	}//4
+%>
+    
