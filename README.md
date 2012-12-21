@@ -12,19 +12,20 @@ These components are built with the Apache Chemistry OpenCMIS implementation.
 
 ## Related projects :
 
-
+[Apache Chemistry OpenCMIS](http://chemistry.apache.org/java/opencmis.html)
+[Talend Open Studio CMIS plugins](https://github.com/julienboulay/talend-cmis-plugins)
 ## Setting Up
 
 Coming soon...
 
 ## Contributions 
 
-You may use clone or fork the code on GitHub.
+You may use fork the code on GitHub.
 
 ## License
 
-* Talend component and plugins : GPL version 3
-* CMIS librairies : Apache License
+* Talend components and plugins : GPL version 3
+* OpenCMIS librairies : Apache License
 
 ## Support
 
