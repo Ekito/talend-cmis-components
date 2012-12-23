@@ -58,4 +58,4 @@ You can report your bug and request enhancement on [github](https://github.com/j
 
 ## Support
 
-The Project is lead by [Julien Boulay](jboulay@ekito.fr) and the [Ekito](http://www.ekito.fr/) team.
+The Project is lead by [Julien Boulay](https://github.com/julienboulay) and the [Ekito](http://www.ekito.fr/) team.
