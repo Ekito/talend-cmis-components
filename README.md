@@ -1,13 +1,14 @@
-# Talend Open Studio CMIS components
+# Talend CMIS components
 
 ## Overview
 
-TOS (Talend Open Studio) CMIS components project provides Talend Open Studio DI components for ECM applications with CMIS capabilities.
+Talend CMIS components project provides [Talend Open Studio Data Integration](http://www.talend.com/products/data-integration) components for ECM applications with CMIS capabilities.
 
 ### About CMIS
 
 CMIS (Content Management Interoperability Services) is an [OASIS](https://www.oasis-open.org/committees/tc_home.php?wg_abbrev=cmis) standard enabling information sharing between different Content Management Systems.
-Apache Chemistry [OpenCMIS](http://chemistry.apache.org/java/opencmis.html) is an Open Source Java library implementing the CMIS standard.
+
+[Apache Chemistry OpenCMIS](http://chemistry.apache.org/java/opencmis.html) is an Open Source Java library implementing the CMIS standard.
 
 ### Features
 
@@ -25,8 +26,8 @@ The following cmis types are supported :
 
 ### License
 
-* Talend components and plugins : GPL version 3
-* OpenCMIS librairies : Apache License
+* Talend components and plugins : [GPL version 3](http://www.gnu.org/licenses/gpl-3.0.html)
+* OpenCMIS librairies : [Apache License](http://www.apache.org/licenses/)
 
 ### Releases
 
@@ -34,26 +35,26 @@ Please take a look at the release notes for supported features, enhancements and
 
 ## Download
 
-You can download these components on the Talend Forge:
+You can download the components on Talend Forge:
 * [tAdvancedCMISInput](http://www.talendforge.org/exchange/index.php?eid=732&product=tos&action=view)
 * [tAdvancedCMISOutput](http://www.talendforge.org/exchange/index.php?eid=733&product=tos&action=view)
 
 ## Documentation
 
-Detailed documentation can be found on the [wiki pages](https://github.com/julienboulay/talend-cmis-components/wiki)
-
-### Installation
-
-### Usage
+Detailed documentation can be found on the [wiki](https://github.com/julienboulay/talend-cmis-components/wiki)
+For a quick start, please see the following links:
+* [installation guide](https://github.com/julienboulay/talend-cmis-components/wiki/Installation-guide)
+* [usage guide](https://github.com/julienboulay/talend-cmis-components/wiki/Usage-guide)
 
 ## Contributions 
 
 You may use fork the code on GitHub.
-You can also contribute to the [Talend Open Studio CMIS plugins](https://github.com/julienboulay/talend-cmis-plugins) project.
+
+You can also contribute to the [Talend CMIS plugins](https://github.com/julienboulay/talend-cmis-plugins) project.
 
 ## Issue Tracking
 
-You can report your bug and request enhancement at https://github.com/julienboulay/talend-cmis-components/issues
+You can report your bug and request enhancement on [github](https://github.com/julienboulay/talend-cmis-components/issues)
 
 ## Support
 
