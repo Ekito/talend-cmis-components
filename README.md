@@ -32,7 +32,7 @@ You can also contribute to the [Talend CMIS plugins](https://github.com/julienbo
 
 ## Issue Tracking
 
-You can report your bug and request enhancement on [github](https://github.com/julienboulay/talend-cmis-components/issues)
+You can report your bug and request enhancement on [GitHub](https://github.com/julienboulay/talend-cmis-components/issues)
 
 ## Support
 
