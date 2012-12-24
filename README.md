@@ -15,11 +15,11 @@ For a quick start, please see the following links:
 You can download [tAdvancedCMISInput](http://www.talendforge.org/exchange/index.php?eid=732&product=tos&action=view)
 and [tAdvancedCMISOutput](http://www.talendforge.org/exchange/index.php?eid=733&product=tos&action=view) on Talend Forge
 
-### Releases
+## Releases
 
 Please take a look at the release notes for supported features, enhancements and bug fixing.
 
-### License
+## License
 
 * Talend components and plugins : [GPL version 3](http://www.gnu.org/licenses/gpl-3.0.html)
 * OpenCMIS librairies : [Apache License](http://www.apache.org/licenses/)
