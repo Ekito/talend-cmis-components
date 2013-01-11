@@ -87,6 +87,8 @@ imports="
 				java.io.OutputStream outputStream = null;
 				try
 				{
+					//Check that the contentPath exist
+					checkContentPath(contentPath);
 					outputStream = new java.io.FileOutputStream(contentPath + "/" + filename);
 					byte buf[]=new byte[1024];
 					int len;
@@ -106,6 +108,18 @@ imports="
 						e1.printStackTrace();
 					}
 					throw new RuntimeException(e);
+				}
+			}
+		}
+		
+		public void checkContentPath(String contentPath)
+		{
+			if (contentPath != null
+				&& contentPath.trim().length() != 0) {
+				java.io.File contentPathDir = new java.io.File(contentPath);
+				//If the path doesn't exist, create it
+				if (!contentPathDir.exists()) {
+					contentPathDir.mkdirs();
 				}
 			}
 		}
