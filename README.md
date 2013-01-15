@@ -4,11 +4,11 @@ Talend CMIS components project provides [Talend Open Studio Data Integration](ht
 
 ## Documentation
 
-Detailed documentation can be found on the [wiki](https://github.com/julienboulay/talend-cmis-components/wiki).
+Detailed documentation can be found on the [wiki](https://github.com/Ekito/talend-cmis-components/wiki).
 
 For a quick start, please see the following links:
-* [Installation guide](https://github.com/julienboulay/talend-cmis-components/wiki/Installation-guide)
-* [Usage guide](https://github.com/julienboulay/talend-cmis-components/wiki/Usage-guide)
+* [Installation guide](https://github.com/Ekito/talend-cmis-components/wiki/Installation-guide)
+* [Usage guide](https://github.com/Ekito/talend-cmis-components/wiki/Usage-guide)
 
 ## Download
 
@@ -28,11 +28,11 @@ Please take a look at the release notes for supported features, enhancements and
 
 You may use fork the code on GitHub.
 
-You can also contribute to the [Talend CMIS plugins](https://github.com/julienboulay/talend-cmis-plugins) project.
+You can also contribute to the [Talend CMIS plugins](https://github.com/Ekito/talend-cmis-plugins) project.
 
 ## Issue Tracking
 
-You can report your bug and request enhancement on [GitHub](https://github.com/julienboulay/talend-cmis-components/issues)
+You can report your bug and request enhancement on [GitHub](https://github.com/Ekito/talend-cmis-components/issues)
 
 ## Support
 
