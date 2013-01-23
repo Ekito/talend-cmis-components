@@ -39,7 +39,11 @@ imports="
     	IMetadataTable metadata = metadatas.get(0);
     	if (metadata!=null) {//2
     	
-	    	String cmisServerURL = ElementParameterParser.getValue(node, "__CMIS_SERVER_URL__");
+	    	String bindingType = ElementParameterParser.getValue(node, "__CMIS_BINDING_TYPE__");        
+		    String atomPubUrl = ElementParameterParser.getValue(node, "__CMIS_ATOMPUB_URL__");
+		    String webServicesUrl = ElementParameterParser.getValue(node, "__CMIS_WEBSERVICES_URL__");
+		    webServicesUrl = webServicesUrl.replaceAll("\"", "");
+			
 			String username = ElementParameterParser.getValue(node, "__CMIS_USER_LOGIN__");
 			String password = ElementParameterParser.getValue(node, "__CMIS_USER_PASSWORD__");
 			String repositoryId = ElementParameterParser.getValue(node, "__CMIS_REPOSITORY__");
@@ -59,9 +63,30 @@ imports="
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.PASSWORD, <%=password %>);
 
 	// connection settings
-	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.ATOMPUB_URL, <%=cmisServerURL %>);
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.BINDING_TYPE,
-		org.apache.chemistry.opencmis.commons.enums.BindingType.ATOMPUB.value());
+		"<%=bindingType%>");
+<%
+			if ("atompub".equals(bindingType))
+			{
+%>
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.ATOMPUB_URL, <%=atomPubUrl%>);
+<%
+			}else if ("webservices".equals(bindingType))
+			{
+%>
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_ACL_SERVICE, "<%=webServicesUrl%>/ACLService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_DISCOVERY_SERVICE, "<%=webServicesUrl%>/DiscoveryService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_MULTIFILING_SERVICE, "<%=webServicesUrl%>/MultiFilingService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_NAVIGATION_SERVICE, "<%=webServicesUrl%>/NavigationService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_OBJECT_SERVICE, "<%=webServicesUrl%>/ObjectService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_POLICY_SERVICE, "<%=webServicesUrl%>/PolicyService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_RELATIONSHIP_SERVICE, "<%=webServicesUrl%>/RelationshipService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_REPOSITORY_SERVICE, "<%=webServicesUrl%>/RepositoryService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_VERSIONING_SERVICE, "<%=webServicesUrl%>/VersioningService?wsdl");
+<%
+			}
+%>
+
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.REPOSITORY_ID, <%=repositoryId %>);
 
 	// session locale
@@ -70,62 +95,6 @@ imports="
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.CONNECT_TIMEOUT, <%=timeout %>);
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.COMPRESSION, "<%=compression %>");
 	
-<%
-			boolean useProxy = Boolean.valueOf(ElementParameterParser.getValue(node, "__USE_PROXY__"));
-			
-			if (useProxy)
-			{//3
-				String proxyHost = ElementParameterParser.getValue(node, "__PROXY_HOST__");
-				String proxyPort = ElementParameterParser.getValue(node, "__PROXY_PORT__");
-				String proxyUser = ElementParameterParser.getValue(node, "__PROXY_USER__");
-				String proxyPassword = ElementParameterParser.getValue(node, "__PROXY_PASSWORD__");
-				
-				String proxyURL = "http://" + proxyHost + ":" + proxyPort;
-%>
-
-	public class CustomProxySelector extends ProxySelector {
-        ProxySelector defaultSelector = null;
-        CustomProxySelector(ProxySelector default) {
-                defaultSelector = default;
-        }
-        
-        public java.util.List<Proxy> select(URI uri) {
-                if (uri == null) {
-                        throw new IllegalArgumentException("URI can't be null.");
-                }
-                String protocol = uri.getScheme();
-                if ("http".equalsIgnoreCase(protocol) ||
-                        "https".equalsIgnoreCase(protocol)) {
-                        ArrayList<Proxy> proxies = new ArrayList<Proxy>();
-                        // Populate the ArrayList with proxies
-                        proxies.add(<%=proxyURL %>);
-                        
-                        return proxies;
-                }
-                if (defaultSelector != null) {
-                        return defaultSelector.select(uri);
-                } else {
-                        ArrayList<Proxy> proxies = new ArrayList<Proxy>();
-                        proxies.add(Proxy.NO_PROXY);
-                        return proxies;
-                }
-        }
-        
-        public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
-        	defaultSelector.connectFailed(uri, sa, ioe);
-		}
-	}
-	
-	CustomProxySelector ps_<%=cid %> = new CustomProxySelector(ProxySelector.getDefault());
-    ProxySelector.setDefault(ps_<%=cid %>);
-    
-	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.PROXY_USER, <%=proxyUser %>);
-	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.PROXY_PASSWORD, <%=proxyPassword %>);
-	
-<%
-			}//3
-	
-%>
 	//Create a new CMIS session
 	org.apache.chemistry.opencmis.client.api.SessionFactory f_<%=cid %> = org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl.newInstance();
 	org.apache.chemistry.opencmis.client.api.Session session_<%=cid %> = f_<%=cid %>.createSession(parameters_<%=cid %>);

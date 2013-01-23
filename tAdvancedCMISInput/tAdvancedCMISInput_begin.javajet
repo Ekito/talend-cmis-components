@@ -31,8 +31,11 @@ imports="
 	CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
 	INode node = (INode)codeGenArgument.getArgument();
 	String cid = node.getUniqueName();
-        
-    String cmisServerURL = ElementParameterParser.getValue(node, "__CMIS_SERVER_URL__");
+
+	String bindingType = ElementParameterParser.getValue(node, "__CMIS_BINDING_TYPE__");        
+    String atomPubUrl = ElementParameterParser.getValue(node, "__CMIS_ATOMPUB_URL__");
+    String webServicesUrl = ElementParameterParser.getValue(node, "__CMIS_WEBSERVICES_URL__");
+    webServicesUrl = webServicesUrl.replaceAll("\"", "");
 	String username = ElementParameterParser.getValue(node, "__CMIS_USER_LOGIN__");
 	String password = ElementParameterParser.getValue(node, "__CMIS_USER_PASSWORD__");
 	String repositoryId = ElementParameterParser.getValue(node, "__CMIS_REPOSITORY__");
@@ -145,9 +148,30 @@ imports="
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.PASSWORD, <%=password %>);
 
 	// connection settings
-	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.ATOMPUB_URL, <%=cmisServerURL %>);
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.BINDING_TYPE,
-		org.apache.chemistry.opencmis.commons.enums.BindingType.ATOMPUB.value());
+		"<%=bindingType%>");
+<%
+			if ("atompub".equals(bindingType))
+			{
+%>
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.ATOMPUB_URL, <%=atomPubUrl%>);
+<%
+			}else if ("webservices".equals(bindingType))
+			{
+%>
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_ACL_SERVICE, "<%=webServicesUrl%>/ACLService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_DISCOVERY_SERVICE, "<%=webServicesUrl%>/DiscoveryService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_MULTIFILING_SERVICE, "<%=webServicesUrl%>/MultiFilingService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_NAVIGATION_SERVICE, "<%=webServicesUrl%>/NavigationService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_OBJECT_SERVICE, "<%=webServicesUrl%>/ObjectService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_POLICY_SERVICE, "<%=webServicesUrl%>/PolicyService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_RELATIONSHIP_SERVICE, "<%=webServicesUrl%>/RelationshipService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_REPOSITORY_SERVICE, "<%=webServicesUrl%>/RepositoryService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_VERSIONING_SERVICE, "<%=webServicesUrl%>/VersioningService?wsdl");
+<%
+			}
+%>
+	
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.REPOSITORY_ID, <%=repositoryId %>);
 
 	// session locale
