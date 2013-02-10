@@ -324,16 +324,16 @@ imports="
 						} else
 						{
 %>
-				<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_Date((String)propertyValue_<%=cid %>, <%= patternValue %>);
+				<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_Date(propertyValue_<%=cid %>.toString(), <%= patternValue %>);
 <%
 						}
 					} else if(javaType == JavaTypesManager.BYTE_ARRAY) { //byte[]
 %>
-				<%=firstConnName %>.<%=column.getLabel() %> = util_<%=cid %>.getFieldbyOrder((String)propertyValue_<%=cid %>).getBytes();
+				<%=firstConnName %>.<%=column.getLabel() %> = util_<%=cid %>.getFieldbyOrder(propertyValue_<%=cid %>.toString()).getBytes();
 <%
-					} else { //other
+					} else { //others
 %>				
-				<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_<%= typeToGenerate %>((String)propertyValue_<%=cid %>);
+				<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_<%= typeToGenerate %>(propertyValue_<%=cid %>.toString());
 <%
 					}
 %>
