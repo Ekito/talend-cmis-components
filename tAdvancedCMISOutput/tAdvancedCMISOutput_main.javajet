@@ -34,15 +34,8 @@ imports="
 	
 	String objectType = ElementParameterParser.getValue(node, "__OBJECT_TYPE__");
 	String baseTypeId = ElementParameterParser.getValue(node, "__BASE_TYPE_ID__");
-	String contentFolder = ElementParameterParser.getValue(node, "__CONTENT_FOLDER__");
 	String targetFolder = ElementParameterParser.getValue(node, "__TARGET_FOLDER__");
-	
-	String contentFolderColumn = "";
-	
-	if (contentFolder.equals("COLUMN"))
-	{
-		contentFolderColumn = ElementParameterParser.getValue(node, "__CONTENT_FOLDER_COLUMN__");
-	}
+	String contentFilePathColumn = ElementParameterParser.getValue(node, "__CONTENT_FILEPATH_COLUMN__");
 	
 	String targetFolderColumn = "";
 	if (targetFolder.equals("COLUMN"))
@@ -50,8 +43,6 @@ imports="
 		targetFolderColumn = ElementParameterParser.getValue(node, "__TARGET_FOLDER_COLUMN__");
 	}
 			
-	boolean uploadContent = Boolean.valueOf(ElementParameterParser.getValue(node, "__UPLOAD_CONTENT__"));
-	
 	// getting incoming connection and name
     List<? extends IConnection> inConns = node.getIncomingConnections();
 	IConnection inConn = null;
@@ -280,28 +271,7 @@ imports="
 				if(baseTypeId.equals("cmis:document")){
 %>
 
-			//Manage the content upload
-			String contentStreamFileName_<%=cid %> = (String)properties_<%=cid %>.get(org.apache.chemistry.opencmis.commons.PropertyIds.CONTENT_STREAM_FILE_NAME);
-			String contentStreamFilePath_<%=cid %> = null;
-
-			if (contentStreamFileName_<%=cid %> != null)
-			{
-
-<%
-					//The content folder is recorded in the flow 
-					if (contentFolder.equals("COLUMN"))
-					{
-%>
-				String contentFolderPath_<%=cid %> = "";
-				if(<%=inConn.getName() %>.<%=contentFolderColumn %> != null) {
-					contentFolderPath_<%=cid %> = <%=inConn.getName() %>.<%=contentFolderColumn %>;
-				}
-<%
-					}
-%>
-				
-				contentStreamFilePath_<%=cid %> = contentFolderPath_<%=cid %> + "/" + contentStreamFileName_<%=cid %>;
-			}
+			String contentStreamFilePath_<%=cid %> = <%=inConn.getName() %>.<%=contentFilePathColumn %>;
 			
 			org.apache.chemistry.opencmis.commons.data.ContentStream contentStream_<%=cid %> = null;
 			
@@ -315,7 +285,7 @@ imports="
 				java.io.FileInputStream contentFileInputStream_<%=cid %> = new java.io.FileInputStream(contentFile_<%=cid %>);
 				long length = contentFile_<%=cid %>.length();
 				contentStream_<%=cid %> = session_<%=cid %>.getObjectFactory()
-					.createContentStream(contentStreamFileName_<%=cid %>,
+					.createContentStream(contentFile_<%=cid %>.getName(),
 						length,
 						mimetype_<%=cid %>,
 						contentFileInputStream_<%=cid %>);

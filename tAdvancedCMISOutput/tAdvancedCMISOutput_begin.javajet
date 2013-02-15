@@ -120,16 +120,6 @@ imports="
 <%           
 			}
 
-			String contentFolder = ElementParameterParser.getValue(node, "__CONTENT_FOLDER__");
-			
-			if (contentFolder.equals("DEFAULT"))
-			{
-				String contentFolderDefault = ElementParameterParser.getValue(node, "__CONTENT_FOLDER_DEFAULT__");
-%>
-	//Get the target folder as it is a fixed value
-	String contentFolderPath_<%=cid %> = <%=contentFolderDefault %>;
-<%           
-			} 
   		}//2
 	}//1
 %>
