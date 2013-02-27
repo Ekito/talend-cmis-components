@@ -316,17 +316,9 @@ imports="
 				<%=firstConnName %>.<%=column.getLabel() %> = propertyValue_<%=cid %>.toString();
 <%
 					} else if(javaType == JavaTypesManager.DATE) { //Date
-						if (cmisPropertyType.equals("datetime"))
-						{
 %>
 				<%=firstConnName %>.<%=column.getLabel() %> = ((java.util.Calendar)propertyValue_<%=cid %>).getTime();
 <%
-						} else
-						{
-%>
-				<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_Date(propertyValue_<%=cid %>.toString(), <%= patternValue %>);
-<%
-						}
 					} else if(javaType == JavaTypesManager.BYTE_ARRAY) { //byte[]
 %>
 				<%=firstConnName %>.<%=column.getLabel() %> = util_<%=cid %>.getFieldbyOrder(propertyValue_<%=cid %>.toString()).getBytes();
