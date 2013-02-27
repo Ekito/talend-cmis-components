@@ -75,11 +75,6 @@
 			<DEFAULT>"default"</DEFAULT>
 		</PARAMETER>
 
-		<PARAMETER NAME="OBJECT_TYPE_ID" FIELD="TEXT" REQUIRED="true"
-			NUM_ROW="40">
-			<DEFAULT>"cmis:document"</DEFAULT>
-		</PARAMETER>
-		
 		<PARAMETER NAME="OBJECT_TYPE" FIELD="EXTERNAL"
 			NUM_ROW="40">
 			<DEFAULT />
@@ -134,18 +129,7 @@
 			<ITEMS>
 				<ITEM NAME="OBJECT_TYPE_ID" FIELD="TEXT" />
 				<ITEM NAME="ID" FIELD="TEXT" />
-				<ITEM NAME="TYPE" FIELD="CLOSED_LIST" >
-					<ITEMS DEFAULT="STRING">
-						<ITEM NAME="STRING" VALUE="string" />
-						<ITEM NAME="BOOLEAN" VALUE="boolean" />
-						<ITEM NAME="DECIMAL" VALUE="decimal" />
-						<ITEM NAME="INTEGER" VALUE="integer" />
-						<ITEM NAME="DATETIME" VALUE="datetime" />
-						<ITEM NAME="URI" VALUE="uri" />
-					</ITEMS>
-				</ITEM>
 				<ITEM NAME="KEY" FIELD="CHECK" />
-				<ITEM NAME="DEFAULT" FIELD="TEXT" />
 				<ITEM NAME="COLUMN" FIELD="COLUMN_LIST" />
 			</ITEMS>
 		</PARAMETER>
