@@ -214,39 +214,17 @@ imports="
 						if(!isPrimitive) {
 %>   				
 	    		if(<%=inConn.getName() %>.<%=schemaColumn %> != null) {
-	    		
 <%
 	    				}
 %>              
-                	properties_<%=cid %>.put("<%=cmisPropertyID %>",    						
+                	properties_<%=cid %>.put("<%=cmisPropertyID %>",  <%=inConn.getName() %>.<%=schemaColumn %>);  						
 <%
-						String pattern = inColumn.getPattern() == null || inColumn.getPattern().trim().length() == 0 ? null : inColumn.getPattern();
-						if (javaType == JavaTypesManager.DATE && pattern != null && pattern.trim().length() != 0) {//Date
-%>
-						FormatterUtils.format_Date(<%=inConn.getName() %>.<%=schemaColumn %>, <%= pattern %>)
-<%				
-						} else if (javaType == JavaTypesManager.BYTE_ARRAY) {//byte[]
-%>
-						java.nio.charset.Charset.defaultCharset().decode(java.nio.ByteBuffer.wrap(<%=inConn.getName() %>.<%=schemaColumn %>)).toString()
-<%				
-						} else {//others
-%>
-						String.valueOf(<%=inConn.getName() %>.<%=schemaColumn %>)
-<%				
-						}
-%>
-					    );	
-						
-<%
-						
 						if(!isPrimitive) {
 %>
 		    	} 
 <%
 						}
-%>
 
-<%
 					}//8
 				}//7
 			}//6
