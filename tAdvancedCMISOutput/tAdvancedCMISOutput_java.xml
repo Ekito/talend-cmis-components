@@ -75,28 +75,30 @@
 			<DEFAULT>"default"</DEFAULT>
 		</PARAMETER>
 
-		<PARAMETER NAME="OBJECT_TYPE" FIELD="EXTERNAL"
-			NUM_ROW="40">
-			<DEFAULT />
-		</PARAMETER>
-		
-		<!-- Hidden parameters -->
-		<PARAMETER NAME="BASE_TYPE_ID" FIELD="CLOSED_LIST" NUM_ROW="45"
-			SHOW="false">
+		<PARAMETER NAME="BASE_TYPE_ID" FIELD="CLOSED_LIST" NUM_ROW="35">
 			<ITEMS DEFAULT="DOCUMENT">
 				<ITEM NAME="DOCUMENT" VALUE="cmis:document" />
 				<ITEM NAME="FOLDER" VALUE="cmis:folder" />
 				<ITEM NAME="RELATIONSHIP" VALUE="cmis:relationship" />
 			</ITEMS>
 		</PARAMETER>
-
+		
+		<PARAMETER NAME="OBJECT_TYPE" FIELD="EXTERNAL"
+			NUM_ROW="40">
+			<DEFAULT />
+		</PARAMETER>
+		
+		<PARAMETER NAME="OBJECT_TYPE_ID" FIELD="TEXT" NUM_ROW="45">
+			<DEFAULT>""</DEFAULT>
+		</PARAMETER>
+		
 		<!-- Closed list with the cmis functions -->
 		<PARAMETER NAME="FUNCTION" FIELD="CLOSED_LIST" NUM_ROW="50"
 			REQUIRED="true">
 			<ITEMS DEFAULT="CREATE">
 				<ITEM NAME="CREATE" VALUE="CREATE" />
-				<ITEM NAME="UPDATE" VALUE="UPDATE" />
-				<ITEM NAME="CREATE_OR_UPDATE" VALUE="CREATE_OR_UPDATE" />
+				<ITEM NAME="UPDATE" VALUE="UPDATE" SHOW_IF="(BASE_TYPE_ID=='DOCUMENT')" />
+				<ITEM NAME="CREATE_OR_UPDATE" VALUE="CREATE_OR_UPDATE" SHOW_IF="(BASE_TYPE_ID=='DOCUMENT')" />
 			</ITEMS>
 		</PARAMETER>
 
@@ -127,7 +129,6 @@
 		<PARAMETER NAME="PROPERTY_MAPPING" FIELD="TABLE" NUM_ROW="100" NB_LINES="10" REQUIRED="true"
 			SHOW="true">
 			<ITEMS>
-				<ITEM NAME="OBJECT_TYPE_ID" FIELD="TEXT" />
 				<ITEM NAME="ID" FIELD="TEXT" />
 				<ITEM NAME="KEY" FIELD="CHECK" />
 				<ITEM NAME="COLUMN" FIELD="COLUMN_LIST" />
@@ -176,43 +177,30 @@
 
 	<CODEGENERATION>
 		<IMPORTS>
-			<IMPORT NAME="activation" MODULE="activation-1.1.jar"
-				REQUIRED="true" />
-			<IMPORT NAME="chemistry-opencmis-client-api"
-				MODULE="chemistry-opencmis-client-api-0.7.0.jar" REQUIRED="true" />
-			<IMPORT NAME="chemistry-opencmis-client-bindings"
-				MODULE="chemistry-opencmis-client-bindings-0.7.0.jar"
-				REQUIRED="true" />
-			<IMPORT NAME="chemistry-opencmis-client-impl"
-				MODULE="chemistry-opencmis-client-impl-0.7.0.jar" REQUIRED="true" />
-			<IMPORT NAME="chemistry-opencmis-commons-api"
-				MODULE="chemistry-opencmis-commons-api-0.7.0.jar" REQUIRED="true" />
-			<IMPORT NAME="chemistry-opencmis-commons-impl"
-				MODULE="chemistry-opencmis-commons-impl-0.7.0.jar"
-				REQUIRED="true" />
-			<IMPORT NAME="commons-codec" MODULE="commons-codec-1.4.jar"
-				REQUIRED="true" />
-			<IMPORT NAME="commons-logging" MODULE="commons-logging-1.1.1.jar"
-				REQUIRED="true" />
+			<IMPORT NAME="cmis-helper" MODULE="cmis-helper-0.2.0.jar" REQUIRED="true" />
+			<IMPORT NAME="activation" MODULE="activation-1.1.jar" REQUIRED="true" />
+			<IMPORT NAME="chemistry-opencmis-client-api" MODULE="chemistry-opencmis-client-api-0.7.0.jar" REQUIRED="true" />
+			<IMPORT NAME="chemistry-opencmis-client-bindings" MODULE="chemistry-opencmis-client-bindings-0.7.0.jar" REQUIRED="true" />
+			<IMPORT NAME="chemistry-opencmis-client-impl" MODULE="chemistry-opencmis-client-impl-0.7.0.jar" REQUIRED="true" />
+			<IMPORT NAME="chemistry-opencmis-commons-api" MODULE="chemistry-opencmis-commons-api-0.7.0.jar" REQUIRED="true" />
+			<IMPORT NAME="chemistry-opencmis-commons-impl" MODULE="chemistry-opencmis-commons-impl-0.7.0.jar" REQUIRED="true" />
+			<IMPORT NAME="commons-codec" MODULE="commons-codec-1.4.jar"	REQUIRED="true" />
+			<IMPORT NAME="commons-logging" MODULE="commons-logging-1.1.1.jar" REQUIRED="true" />
 			<IMPORT NAME="jaxb-api" MODULE="jaxb-api-2.1.jar" REQUIRED="true" />
-			<IMPORT NAME="jaxb-impl" MODULE="jaxb-impl-2.1.11.jar"
-				REQUIRED="true" />
+			<IMPORT NAME="jaxb-impl" MODULE="jaxb-impl-2.1.11.jar" REQUIRED="true" />
 			<IMPORT NAME="jaxws-api" MODULE="jaxws-api-2.1.jar" REQUIRED="true" />
 			<IMPORT NAME="jaxws-rt" MODULE="jaxws-rt-2.1.7.jar" REQUIRED="true" />
 			<IMPORT NAME="jsr181-api" MODULE="jsr181-api-1.0-MR1.jar" REQUIRED="true" />
 			<IMPORT NAME="jsr250-api" MODULE="jsr250-api-1.0.jar" REQUIRED="true" />
 			<IMPORT NAME="mimepull" MODULE="mimepull-1.3.jar" REQUIRED="true" />
 			<IMPORT NAME="osgi" MODULE="org.osgi.core-1.0.0.jar" REQUIRED="true" />
-			<IMPORT NAME="resolver" MODULE="resolver-20050927.jar"
-				REQUIRED="true" />
+			<IMPORT NAME="resolver" MODULE="resolver-20050927.jar" REQUIRED="true" />
 			<IMPORT NAME="saaj-api" MODULE="saaj-api-1.3.jar" REQUIRED="true" />
-			<IMPORT NAME="saaj-impl" MODULE="saaj-impl-1.3.3.jar"
-				REQUIRED="true" />
+			<IMPORT NAME="saaj-impl" MODULE="saaj-impl-1.3.3.jar" REQUIRED="true" />
       		<IMPORT NAME="stax-api" MODULE="stax-api-1.0.1.jar" REQUIRED="true" />
 			<IMPORT NAME="stax-api" MODULE="stax-api-1.0.jar" REQUIRED="true" />
 			<IMPORT NAME="stax-ex" MODULE="stax-ex-1.2.jar" REQUIRED="true" />
-			<IMPORT NAME="streambuffer" MODULE="streambuffer-0.9.jar"
-				REQUIRED="true" />
+			<IMPORT NAME="streambuffer" MODULE="streambuffer-0.9.jar" REQUIRED="true" />
 			<IMPORT NAME="wstx-asl" MODULE="wstx-asl-3.2.3.jar" REQUIRED="true" />
 		</IMPORTS>
 	</CODEGENERATION>

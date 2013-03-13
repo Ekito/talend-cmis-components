@@ -1,16 +1,3 @@
-<%%>
-<%
-/*******************************************************************************
- * Copyright (c) 2012 Julien Boulay - Ekito - www.ekito.fr.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Public License v3.0
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/gpl.html
- * 
- * Contributors:
- *     Julien Boulay - Ekito - www.ekito.fr - initial API and implementation
- ******************************************************************************/
-%>
 <%@ jet 
 imports="
     	org.talend.core.model.process.INode 
@@ -32,7 +19,7 @@ imports="
 	String function = ElementParameterParser.getValue(node, "__FUNCTION__");
 	List<Map<String, String>> propertyMappings = (List<Map<String,String>>)ElementParameterParser.getObjectValue(node, "__PROPERTY_MAPPING__");
 	
-	String objectType = ElementParameterParser.getValue(node, "__OBJECT_TYPE__");
+	String objectTypeId = ElementParameterParser.getValue(node, "__OBJECT_TYPE_ID__");
 	String baseTypeId = ElementParameterParser.getValue(node, "__BASE_TYPE_ID__");
 	String targetFolder = ElementParameterParser.getValue(node, "__TARGET_FOLDER__");
 	String contentFilePathColumn = ElementParameterParser.getValue(node, "__CONTENT_FILEPATH_COLUMN__");
@@ -71,127 +58,16 @@ imports="
 			
 			//Generates the query for existing data
     		List<IMetadataColumn> inColumns = inMetadata.getListColumns();
-    		boolean keyExists = false;
-    		
-    		
-    		for(Map<String, String> propertyMapping : propertyMappings) {//checkMappingKey
-    			Boolean isKey = Boolean.valueOf(propertyMapping.get("KEY"));
-    			if (isKey)
-    			{
-    				keyExists = true;
-    			}
-    		}
-    		
-    		if (keyExists)
-    		{
-%>
-				java.lang.StringBuilder queryStatement_<%=cid %> = new java.lang.StringBuilder();
-				
-				queryStatement_<%=cid %>.append("SELECT ")
-					.append(objectIdQueryName_<%=cid %>)
-					.append(" FROM <%=objectType %> WHERE ");
-				
-<%    			
-				boolean predicateExists = false;
-				
-			    for(Map<String, String> propertyMapping : propertyMappings) {//3
-			        String schemaColumn = propertyMapping.get("COLUMN");
-			        String cmisPropertyID =  null;
-			        Boolean isKey = false;
-			        if (schemaColumn != null && schemaColumn.length() > 0) {
-			            cmisPropertyID = propertyMapping.get("ID");
-			            isKey = Boolean.valueOf(propertyMapping.get("KEY"));
-			        } 
-			        
-			        if(isKey)
-	    			{
-				        for (int i = 0; i < inColumns.size(); i++) {//4
-			  			
-		    				IMetadataColumn inColumn = inColumns.get(i);
-		    				
-		    				if (inColumn.getLabel().equals(schemaColumn)) { //5
-								JavaType javaType = JavaTypesManager.getJavaTypeFromId(inColumn.getTalendType());
-			
-								boolean isPrimitive = JavaTypesManager.isJavaPrimitiveType( javaType, inColumn.isNullable());
-								if(!isPrimitive) {
-%>   				
-	    		if(<%=inConn.getName() %>.<%=schemaColumn %> != null) {
-<%
-		    					}
-	    					
-	    						if (predicateExists)
-	    						{
-%>
-					queryStatement_<%=cid %>.append(" and ");
-<%
-								} else
-								{
-%>
-					queryStatement_<%=cid %>.append("<%=cmisPropertyID %> = '").append(<%=inConn.getName() %>.<%=schemaColumn %>).append("'");				
-<%
-								predicateExists = true;
-								}
-							
-								if(!isPrimitive) {
-%>
-		    	} 
-<%
-								}
-							}//Corresponding Metadata
-						}//For Each MetadataColumn
-					}//IsKey
-				}//For Each PropertyMapping
-			}//KeyExists
 %>
 		try
 		{
-			org.apache.chemistry.opencmis.client.api.CmisObject object_<%=cid %> = null;
-
-<%
-			if (keyExists)
-    		{
-%>
-			org.apache.chemistry.opencmis.client.api.ItemIterable<org.apache.chemistry.opencmis.client.api.QueryResult> results_<%=cid %> = session_<%=cid %>.query(queryStatement_<%=cid %>.toString(), false);
-				
-			if (results_<%=cid %>.getTotalNumItems() > 0)
-			{
-				
-<%			
-				//If CREATE mode only, an exception is thrown as the object already exists
-				if (function.equals("CREATE"))
-				{
-%>
-				throw new Exception("An object already exists with the following criteria :");
-<%
-				}else //Else get the records for update
-				{
-%>
-				if (results_<%=cid %>.getTotalNumItems() > 1)
-				{
-					throw new Exception("Two many objects (" + results_<%=cid %>.getTotalNumItems() + ") already exist with the following criteria :");
-				}
-				
-				for (org.apache.chemistry.opencmis.client.api.QueryResult result_<%=cid %> : results_<%=cid %>) {
-	
-					String objectId_<%=cid %> = result_<%=cid %>.getPropertyValueByQueryName(objectIdQueryName_<%=cid %>);;
-					object_<%=cid %> = session_<%=cid %>.getObject(session_<%=cid %>.createObjectId(objectId_<%=cid %>));
-				}
-					
-<%
-				}
-%>
-			}
-<%
-			}//keyExists
-%>
-				
 			//Initialize the properties for the cmisObject
 			//being created/updated
 			java.util.Map<String, Object> properties_<%=cid %> = new java.util.HashMap<String, Object>();
+			java.util.Map<String, Object> keys_<%=cid %> = new java.util.HashMap<String, Object>();
 			
-			//Add the objectType
-			properties_<%=cid %>.put(org.apache.chemistry.opencmis.commons.PropertyIds.OBJECT_TYPE_ID, "<%=objectType %>");
 <%
+			Boolean keysExists = false;
 			
 		    for(Map<String, String> propertyMapping : propertyMappings) {//6
 		        String schemaColumn = propertyMapping.get("COLUMN");
@@ -219,6 +95,13 @@ imports="
 %>              
                 	properties_<%=cid %>.put("<%=cmisPropertyID %>",  <%=inConn.getName() %>.<%=schemaColumn %>);  						
 <%
+						if (isKey)
+						{
+%>
+					keys_<%=cid %>.put("<%=cmisPropertyID %>",  <%=inConn.getName() %>.<%=schemaColumn %>);
+<%
+							keysExists = true;
+						}
 						if(!isPrimitive) {
 %>
 		    	} 
@@ -228,11 +111,22 @@ imports="
 					}//8
 				}//7
 			}//6
-
-			if(function.equals("CREATE")){
-					//The target folder is recorded in the flow 
-					if (targetFolder.equals("COLUMN"))
-					{
+			
+%>
+					//Add the objectTypeId
+					properties_<%=cid %>.put(org.apache.chemistry.opencmis.commons.PropertyIds.OBJECT_TYPE_ID, <%=objectTypeId %>);
+			
+<%
+			if (keysExists)
+			{
+%>
+					keys_<%=cid %>.put(org.apache.chemistry.opencmis.commons.PropertyIds.OBJECT_TYPE_ID, <%=objectTypeId %>);
+<%
+			}
+			
+			//The target folder is recorded in the flow 
+			if (targetFolder.equals("COLUMN"))
+			{
 %>
 			//The target folder is coming from the data flow
 			String targetFolderPath_<%=cid %> = "";
@@ -240,51 +134,58 @@ imports="
 				targetFolderPath_<%=cid %> = <%=inConn.getName() %>.<%=targetFolderColumn %>;
 			}
 <%
-					}
-%>
-			org.apache.chemistry.opencmis.client.api.Folder targetFolder_<%=cid %> = null;
-			targetFolder_<%=cid %> = (org.apache.chemistry.opencmis.client.api.Folder)session_<%=cid %>.getObjectByPath(targetFolderPath_<%=cid %>);
-
-<%
-				if(baseTypeId.equals("cmis:document")){
-%>
-
-			String contentStreamFilePath_<%=cid %> = <%=inConn.getName() %>.<%=contentFilePathColumn %>;
-			
-			org.apache.chemistry.opencmis.commons.data.ContentStream contentStream_<%=cid %> = null;
-			
-			if (contentStreamFilePath_<%=cid %> != null)
-			{
-				java.io.File contentFile_<%=cid %> = new java.io.File(contentStreamFilePath_<%=cid %>);
-				
-				java.net.FileNameMap fileNameMap_<%=cid %> = java.net.URLConnection.getFileNameMap();
-      			String mimetype_<%=cid %> = fileNameMap_<%=cid %>.getContentTypeFor(contentStreamFilePath_<%=cid %>);
-      
-				java.io.FileInputStream contentFileInputStream_<%=cid %> = new java.io.FileInputStream(contentFile_<%=cid %>);
-				long length = contentFile_<%=cid %>.length();
-				contentStream_<%=cid %> = session_<%=cid %>.getObjectFactory()
-					.createContentStream(contentFile_<%=cid %>.getName(),
-						length,
-						mimetype_<%=cid %>,
-						contentFileInputStream_<%=cid %>);
 			}
 			
-			targetFolder_<%=cid %>.createDocument(properties_<%=cid %>, contentStream_<%=cid %>, org.apache.chemistry.opencmis.commons.enums.VersioningState.MAJOR);
+			if (baseTypeId.equals("cmis:document"))
+			{
+%>
+			String contentStreamFilePath_<%=cid %> = <%=inConn.getName() %>.<%=contentFilePathColumn %>;
+			
+<%
+			}
+								
+			if(function.equals("CREATE")){
+
+					if(baseTypeId.equals("cmis:document")){
+%>
+
+			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CMISHelper.createDocument(session_<%=cid %>,
+				targetFolderPath_<%=cid %>,
+				properties_<%=cid %>,
+				keys_<%=cid %>,
+				contentStreamFilePath_<%=cid %>);
+			
 			nb_line_<%=cid %>++;
 <%
 				}else if (baseTypeId.equals("cmis:folder")){
 %>
-			targetFolder_<%=cid %>.createFolder(properties_<%=cid %>);
+			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CMISHelper.createFolder(session_<%=cid %>,
+				targetFolderPath_<%=cid %>,
+				properties_<%=cid %>,
+				keys_<%=cid %>,
+				false);
+				
 			nb_line_<%=cid %>++;
 <%
 				}
 			}else if(function.equals("UPDATE")){
 %>
-			object_<%=cid %>.updateProperties(properties_<%=cid %>);
+			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CMISHelper.updateDocument(session_<%=cid %>,
+				targetFolderPath_<%=cid %>,
+				properties_<%=cid %>,
+				keys_<%=cid %>,
+				contentStreamFilePath_<%=cid %>);
+				
 			nb_line_<%=cid %>++;
 <%
 			}else if(function.equals("CREATE_OR_UPDATE")){
 %>
+			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CMISHelper.createOrUpdateDocument(session_<%=cid %>,
+				targetFolderPath_<%=cid %>,
+				properties_<%=cid %>,
+				keys_<%=cid %>,
+				contentStreamFilePath_<%=cid %>);
+				
 			nb_line_<%=cid %>++;
 <%
 			}
