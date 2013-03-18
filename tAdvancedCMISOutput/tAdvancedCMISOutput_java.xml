@@ -79,7 +79,7 @@
 			<ITEMS DEFAULT="DOCUMENT">
 				<ITEM NAME="DOCUMENT" VALUE="cmis:document" />
 				<ITEM NAME="FOLDER" VALUE="cmis:folder" />
-				<ITEM NAME="RELATIONSHIP" VALUE="cmis:relationship" />
+				<!-- <ITEM NAME="RELATIONSHIP" VALUE="cmis:relationship" />-->
 			</ITEMS>
 		</PARAMETER>
 		
