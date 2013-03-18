@@ -75,6 +75,14 @@
 			<DEFAULT>"default"</DEFAULT>
 		</PARAMETER>
 
+		<PARAMETER NAME="BASE_TYPE_ID" FIELD="CLOSED_LIST" NUM_ROW="40">
+			<ITEMS DEFAULT="DOCUMENT">
+				<ITEM NAME="DOCUMENT" VALUE="cmis:document" />
+				<ITEM NAME="FOLDER" VALUE="cmis:folder" />
+				<!-- <ITEM NAME="RELATIONSHIP" VALUE="cmis:relationship" />-->
+			</ITEMS>
+		</PARAMETER>
+
 		<PARAMETER NAME="OBJECT_TYPE" FIELD="EXTERNAL"
 			NUM_ROW="50">
 			<DEFAULT />
