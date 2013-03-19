@@ -116,12 +116,6 @@
 			REQUIRED="true">
 		</PARAMETER>
 		
-		<!-- Hidden parameters -->
-		<PARAMETER NAME="BASE_TYPE_ID" FIELD="TEXT" NUM_ROW="300"
-			SHOW="false">
-			  <DEFAULT>"cmis:Document"</DEFAULT>
-		</PARAMETER>
-		
 	</PARAMETERS>
 
 
