@@ -23,6 +23,7 @@ imports="
 	String baseTypeId = ElementParameterParser.getValue(node, "__BASE_TYPE_ID__");
 	String targetFolder = ElementParameterParser.getValue(node, "__TARGET_FOLDER__");
 	String contentFilePathColumn = ElementParameterParser.getValue(node, "__CONTENT_FILEPATH_COLUMN__");
+	boolean createFolderRecursive = Boolean.valueOf( ElementParameterParser.getValue(node, "__CREATE_FOLDER_RECURSIVE__"));
 	
 	String targetFolderColumn = "";
 	if (targetFolder.equals("COLUMN"))
@@ -163,7 +164,7 @@ imports="
 				targetFolderPath_<%=cid %>,
 				properties_<%=cid %>,
 				keys_<%=cid %>,
-				false);
+				<%=createFolderRecursive%>);
 				
 			nb_line_<%=cid %>++;
 <%
