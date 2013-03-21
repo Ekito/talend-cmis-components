@@ -36,88 +36,6 @@ imports="
 	if (downloadContent)
 	{
 		contentPath = ElementParameterParser.getValue(node, "__CONTENT_PATH__");
-%>
-	class ContentManager {
-		public void extractCMISObjectContent(org.apache.chemistry.opencmis.client.api.CmisObject cmisObject, String contentPath)
-		{
-			if (cmisObject instanceof org.apache.chemistry.opencmis.client.api.Document)
-			{
-				org.apache.chemistry.opencmis.client.api.Document cmisDocument = (org.apache.chemistry.opencmis.client.api.Document) cmisObject;
-				extractDocumentContent(cmisDocument, contentPath);
-			}
-			else if (cmisObject instanceof org.apache.chemistry.opencmis.client.api.Folder)
-			{
-				org.apache.chemistry.opencmis.client.api.Folder cmisFolder = (org.apache.chemistry.opencmis.client.api.Folder) cmisObject;
-				org.apache.chemistry.opencmis.client.api.ItemIterable<org.apache.chemistry.opencmis.client.api.CmisObject> childrens = cmisFolder.getChildren();
-	
-				//Read the document list of the folder and download the content
-				for (java.util.Iterator<org.apache.chemistry.opencmis.client.api.CmisObject> childIterator = childrens.iterator(); childIterator.hasNext();) {
-	
-	
-					org.apache.chemistry.opencmis.client.api.CmisObject childObject = (org.apache.chemistry.opencmis.client.api.CmisObject) childIterator.next();
-	
-					if (childObject instanceof org.apache.chemistry.opencmis.client.api.Document)
-					{
-						org.apache.chemistry.opencmis.client.api.Document cmisDocument = (org.apache.chemistry.opencmis.client.api.Document) childObject;
-						extractDocumentContent(cmisDocument, contentPath);
-						//TODO : add "download content recursively" option and download content for subfolders
-	
-					}
-				}
-			}
-		}
-		
-		public void extractDocumentContent(org.apache.chemistry.opencmis.client.api.Document cmisDocument, String contentPath)
-		{
-			String filename = cmisDocument.getContentStreamFileName();
-			
-			//Test if filename is not null, else this document has not content
-			if (filename != null)
-			{
-				java.io.InputStream inputStream = cmisDocument.getContentStream().getStream();
-				java.io.OutputStream outputStream = null;
-				try
-				{
-					//Check that the contentPath exist
-					checkContentPath(contentPath);
-					outputStream = new java.io.FileOutputStream(contentPath + "/" + filename);
-					byte buf[]=new byte[1024];
-					int len;
-					while((len = inputStream.read(buf))>0)
-						outputStream.write(buf, 0, len);
-					outputStream.close();
-					inputStream.close();
-				}catch (IOException e)
-				{
-					try {
-						if (outputStream != null)
-							outputStream.close();
-							
-						inputStream.close();
-					}catch (IOException e1)
-					{
-						e1.printStackTrace();
-					}
-					throw new RuntimeException(e);
-				}
-			}
-		}
-		
-		public void checkContentPath(String contentPath)
-		{
-			if (contentPath != null
-				&& contentPath.trim().length() != 0) {
-				java.io.File contentPathDir = new java.io.File(contentPath);
-				//If the path doesn't exist, create it
-				if (!contentPathDir.exists()) {
-					contentPathDir.mkdirs();
-				}
-			}
-		}
-	}
-	
-	ContentManager contentManager_<%=cid %> = new ContentManager();
-<%
 	}
 	
     //Test if some metadata exists. Otherwise, no java code generation
@@ -221,15 +139,12 @@ imports="
 	    	List<Map<String, String>> propertyMappings = (List<Map<String,String>>)ElementParameterParser.getObjectValue(node, "__PROPERTY_MAPPING__");
 	
 			Map<String, String> inputMapping = new HashMap<String, String>();
-			Map<String, String> cmisPropertyTypeMapping = new HashMap<String, String>();
 			
 			for (Map<String,String> propertyMapping : propertyMappings)
 			{
 				String cmisPropertyId = propertyMapping.get("ID");
 				String schemaPropertyId = propertyMapping.get("COLUMN");
-				String cmisPropertyType = propertyMapping.get("TYPE");
 				inputMapping.put(schemaPropertyId, cmisPropertyId);
-				cmisPropertyTypeMapping.put(cmisPropertyId,cmisPropertyType);
 			}
 			
 	    	String query = ElementParameterParser.getValue(node, "__QUERY__");
@@ -286,7 +201,6 @@ imports="
 					String patternValue = column.getPattern() == null || column.getPattern().trim().length() == 0 ? null : column.getPattern();
 					
 					String cmisPropertyName = inputMapping.get(column.getLabel());
-					String cmisPropertyType = cmisPropertyTypeMapping.get(cmisPropertyName);
 
 					if (cmisPropertyName != null) {
 %>
@@ -364,7 +278,7 @@ imports="
 		org.apache.chemistry.opencmis.client.api.ObjectId objectId_<%=cid %> = session_<%=cid %>.createObjectId(objectIdString_<%=cid %>);
 		org.apache.chemistry.opencmis.client.api.CmisObject cmisObject_<%=cid %> = session_<%=cid %>.getObject(objectId_<%=cid %>);
 		
-		contentManager_<%=cid %>.extractCMISObjectContent(cmisObject_<%=cid %>, <%=contentPath %>);
+		CmisHelper.extractCMISObjectContent(cmisObject_<%=cid %>, <%=contentPath %>);
 <%				
 			}//8
   		}//5
