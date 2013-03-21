@@ -150,7 +150,7 @@ imports="
 					if(baseTypeId.equals("cmis:document")){
 %>
 
-			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CMISHelper.createDocument(session_<%=cid %>,
+			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CmisHelper.createDocument(session_<%=cid %>,
 				targetFolderPath_<%=cid %>,
 				properties_<%=cid %>,
 				keys_<%=cid %>,
@@ -160,7 +160,7 @@ imports="
 <%
 				}else if (baseTypeId.equals("cmis:folder")){
 %>
-			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CMISHelper.createFolder(session_<%=cid %>,
+			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CmisHelper.createFolder(session_<%=cid %>,
 				targetFolderPath_<%=cid %>,
 				properties_<%=cid %>,
 				keys_<%=cid %>,
@@ -171,7 +171,7 @@ imports="
 				}
 			}else if(function.equals("UPDATE")){
 %>
-			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CMISHelper.updateDocument(session_<%=cid %>,
+			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CmisHelper.updateDocument(session_<%=cid %>,
 				targetFolderPath_<%=cid %>,
 				properties_<%=cid %>,
 				keys_<%=cid %>,
@@ -181,7 +181,7 @@ imports="
 <%
 			}else if(function.equals("CREATE_OR_UPDATE")){
 %>
-			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CMISHelper.createOrUpdateDocument(session_<%=cid %>,
+			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CmisHelper.createOrUpdateDocument(session_<%=cid %>,
 				targetFolderPath_<%=cid %>,
 				properties_<%=cid %>,
 				keys_<%=cid %>,
