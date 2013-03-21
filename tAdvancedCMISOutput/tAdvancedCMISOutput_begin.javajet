@@ -37,8 +37,7 @@ imports="
 			String language = ElementParameterParser.getValue(node, "__LANGUAGE_CONNECTION__");
 			String timeout = ElementParameterParser.getValue(node, "__TIMEOUT_CONNECTION__");
 			String compression = ElementParameterParser.getValue(node, "__COMPRESSION__");
-			
-			String objectType = ElementParameterParser.getValue(node, "__OBJECT_TYPE__");  
+			  
 %>
 	            
 	int nb_line_<%=cid %> = 0;
@@ -88,12 +87,7 @@ imports="
 	//TODO Manage cache as an option in the component
 	//org.apache.chemistry.opencmis.client.api.OperationContext operationContext_<%=cid %> = session_<%=cid %>.createOperationContext();
 	//operationContext_<%=cid %>.setCacheEnabled(false);
-	
-	//Get the queryName for objectId property
-	org.apache.chemistry.opencmis.client.api.ObjectType type_<%=cid %> = session_<%=cid %>.getTypeDefinition("<%=objectType %>");
-	org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition<?> objectIdPropDef_<%=cid %> = type_<%=cid %>.getPropertyDefinitions().get(org.apache.chemistry.opencmis.commons.PropertyIds.OBJECT_ID);
-	String objectIdQueryName_<%=cid %> = objectIdPropDef_<%=cid %>.getQueryName();
-	
+		
 <%
 			String targetFolder = ElementParameterParser.getValue(node, "__TARGET_FOLDER__");
 			
