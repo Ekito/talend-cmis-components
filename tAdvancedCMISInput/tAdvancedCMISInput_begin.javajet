@@ -60,31 +60,6 @@ imports="
 %>
 	//firstConn
 	<%=firstConnName %> = null;
-<%
-			
-				// getting reject connection columnList and name
-				IConnection rejectConn = null;
-				String rejectConnName = null;
-				List<? extends IConnection> rejectConns = node.getOutgoingConnections("REJECT");
-				
-				if(rejectConns != null && rejectConns.size() > 0) {
-				    rejectConn = rejectConns.get(0);
-				    rejectConnName = rejectConn.getName();
-				}
-				
-				List<IMetadataColumn> rejectColumns = null;
-				IMetadataTable rejectMetadataTable = node.getMetadataFromConnector("REJECT");
-				if(rejectMetadataTable != null) {
-				    rejectColumns = rejectMetadataTable.getListColumns();      
-				}
-				
-				if (rejectConnName != null)
-				{
-%>
-	<%=rejectConnName %> = null;
-<%
-				}
-%>
 	
 	int nb_line_<%=cid %> = 0;
 	java.util.Map<String, String> parameters_<%=cid %> = new java.util.HashMap<String, String>();
@@ -153,26 +128,10 @@ imports="
 	{
 		results_<%=cid %> = session_<%=cid %>.query(<%=query %>, true);
 		
-	} catch (Exception mainEx_<%=cid%>) { // end reject exception handling
+	} catch (Exception mainEx_<%=cid%>) {
 	    
-<%
-	        	// handling exception as reject connection or std err
-	        	if(rejectConnName != null && rejectColumns != null && rejectColumns.size() > 0) {
-%>
-	    <%=rejectConnName %> = new <%=rejectConnName %>Struct();
-	    
-	    <%=rejectConnName%>.errorOrigin = <%=query %>;
-	    <%=rejectConnName%>.errorMessage = mainEx_<%=cid%>.getMessage();
-	    <%=rejectConnName%>.errorCode = "";
-<%
-		    	} else {
-%>
         // handling exception as std err
-        System.err.println(mainEx_<%=cid%>.getMessage());
-<%
-            	}
-%>
-            
+        System.err.println(mainEx_<%=cid%>.getMessage());            
 	}
 	
 	//Read the retrieved record
@@ -253,7 +212,7 @@ imports="
 				if (conns.size()>1) {
 					for (int i=1;i<conns.size();i++) {
 						IConnection conn2 = conns.get(i);
-						if ((conn2.getName().compareTo(firstConnName)!=0)&&(conn2.getName().compareTo(rejectConnName)!=0)
+						if ((conn2 != null && conn2.getName().compareTo(firstConnName)!=0)
 						&&(conn2.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA))) {
 					    	for (IMetadataColumn column: metadata.getListColumns()) {
 %>
