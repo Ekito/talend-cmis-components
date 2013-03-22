@@ -278,7 +278,7 @@ imports="
 		org.apache.chemistry.opencmis.client.api.ObjectId objectId_<%=cid %> = session_<%=cid %>.createObjectId(objectIdString_<%=cid %>);
 		org.apache.chemistry.opencmis.client.api.CmisObject cmisObject_<%=cid %> = session_<%=cid %>.getObject(objectId_<%=cid %>);
 		
-		CmisHelper.extractCMISObjectContent(cmisObject_<%=cid %>, <%=contentPath %>);
+		org.talend.cmis.helper.CmisHelper.extractCMISObjectContent(cmisObject_<%=cid %>, <%=contentPath %>);
 <%				
 			}//8
   		}//5
