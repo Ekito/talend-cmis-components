@@ -40,11 +40,52 @@ imports="
 	
     //Test if some metadata exists. Otherwise, no java code generation
     List<IMetadataTable> metadatas = node.getMetadataList();
+
 	if ((metadatas!=null)&&(metadatas.size()>0)) {//1
     	IMetadataTable metadata = metadatas.get(0);
-    	if (metadata!=null) {//2		
-%>
+    	if (metadata!=null) {//2
+    	
+    		
+			
+			IConnection firstConn = null;
+			String firstConnName = null;
+			
+			List<? extends IConnection> mainConns = node.getMainOutgoingConnections();
 
+			//If no main outgoing connections, then no java code generation			
+			if(mainConns != null && mainConns.size() > 0) {//3
+			    firstConn = mainConns.get(0);
+			    firstConnName = firstConn.getName();
+
+%>
+	//firstConn
+	<%=firstConnName %> = null;
+<%
+			
+				// getting reject connection columnList and name
+				IConnection rejectConn = null;
+				String rejectConnName = null;
+				List<? extends IConnection> rejectConns = node.getOutgoingConnections("REJECT");
+				
+				if(rejectConns != null && rejectConns.size() > 0) {
+				    rejectConn = rejectConns.get(0);
+				    rejectConnName = rejectConn.getName();
+				}
+				
+				List<IMetadataColumn> rejectColumns = null;
+				IMetadataTable rejectMetadataTable = node.getMetadataFromConnector("REJECT");
+				if(rejectMetadataTable != null) {
+				    rejectColumns = rejectMetadataTable.getListColumns();      
+				}
+				
+				if (rejectConnName != null)
+				{
+%>
+	<%=rejectConnName %> = null;
+<%
+				}
+%>
+	
 	int nb_line_<%=cid %> = 0;
 	java.util.Map<String, String> parameters_<%=cid %> = new java.util.HashMap<String, String>();
 	
@@ -56,13 +97,13 @@ imports="
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.BINDING_TYPE,
 		"<%=bindingType%>");
 <%
-			if ("atompub".equals(bindingType))
-			{
+				if ("atompub".equals(bindingType))
+				{
 %>
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.ATOMPUB_URL, <%=atomPubUrl%>);
 <%
-			}else if ("webservices".equals(bindingType))
-			{
+				}else if ("webservices".equals(bindingType))
+				{
 %>
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_ACL_SERVICE, "<%=webServicesUrl%>/ACLService?wsdl");
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_DISCOVERY_SERVICE, "<%=webServicesUrl%>/DiscoveryService?wsdl");
@@ -74,7 +115,7 @@ imports="
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_REPOSITORY_SERVICE, "<%=webServicesUrl%>/RepositoryService?wsdl");
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_VERSIONING_SERVICE, "<%=webServicesUrl%>/VersioningService?wsdl");
 <%
-			}
+				}	
 %>
 	
 	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.REPOSITORY_ID, <%=repositoryId %>);
@@ -89,65 +130,19 @@ imports="
 	org.apache.chemistry.opencmis.client.api.SessionFactory f_<%=cid %> = org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl.newInstance();
 	org.apache.chemistry.opencmis.client.api.Session session_<%=cid %> = f_<%=cid %>.createSession(parameters_<%=cid %>);
 <%
-
-		}//2
-	}//1
-	List< ? extends IConnection> conns = node.getOutgoingSortedConnections();
-	
-	// getting reject connection columnList and name
-	IConnection rejectConn = null;
-	String rejectConnName = null;
-	List<? extends IConnection> rejectConns = node.getOutgoingConnections("REJECT");
-	
-	if(rejectConns != null && rejectConns.size() > 0) {
-	    rejectConn = rejectConns.get(0);
-	    rejectConnName = rejectConn.getName();
-	}
-	
-	List<IMetadataColumn> rejectColumns = null;
-	IMetadataTable metadataTable = node.getMetadataFromConnector("REJECT");
-	if(metadataTable != null) {
-	    rejectColumns = metadataTable.getListColumns();      
-	}
-	
-	IConnection firstConn = null;
-	String firstConnName = "";
-	List<? extends IConnection> mainConns = node.getMainOutgoingConnections();
-	
-	if(mainConns != null && mainConns.size() > 0) {
-	    firstConn = mainConns.get(0);
-	    firstConnName = firstConn.getName();
-	}
-	
-	if (firstConnName != null)
-	{
-%>
-	<%=firstConnName %> = null;
-<%
-	}
-	if (rejectConnName != null)
-	{
-%>
-	<%=rejectConnName %> = null;
-<%
-	}
-
-	if ( ( metadatas != null ) && ( metadatas.size() > 0 ) ) {//4
-	    IMetadataTable metadata = metadatas.get(0);
-	    if (metadata!=null) {//5    
-	    	
-	    	List<Map<String, String>> propertyMappings = (List<Map<String,String>>)ElementParameterParser.getObjectValue(node, "__PROPERTY_MAPPING__");
-	
-			Map<String, String> inputMapping = new HashMap<String, String>();
-			
-			for (Map<String,String> propertyMapping : propertyMappings)
-			{
-				String cmisPropertyId = propertyMapping.get("ID");
-				String schemaPropertyId = propertyMapping.get("COLUMN");
-				inputMapping.put(schemaPropertyId, cmisPropertyId);
-			}
-			
-	    	String query = ElementParameterParser.getValue(node, "__QUERY__");
+		
+		    	List<Map<String, String>> propertyMappings = (List<Map<String,String>>)ElementParameterParser.getObjectValue(node, "__PROPERTY_MAPPING__");
+		
+				Map<String, String> inputMapping = new HashMap<String, String>();
+				
+				for (Map<String,String> propertyMapping : propertyMappings)
+				{
+					String cmisPropertyId = propertyMapping.get("ID");
+					String schemaPropertyId = propertyMapping.get("COLUMN");
+					inputMapping.put(schemaPropertyId, cmisPropertyId);
+				}
+				
+		    	String query = ElementParameterParser.getValue(node, "__QUERY__");
 	    	
 	   
 %>
@@ -161,8 +156,8 @@ imports="
 	} catch (Exception mainEx_<%=cid%>) { // end reject exception handling
 	    
 <%
-	        // handling exception as reject connection or std err
-	        if(rejectConnName != null && rejectColumns != null && rejectColumns.size() > 0) {
+	        	// handling exception as reject connection or std err
+	        	if(rejectConnName != null && rejectColumns != null && rejectColumns.size() > 0) {
 %>
 	    <%=rejectConnName %> = new <%=rejectConnName %>Struct();
 	    
@@ -170,12 +165,12 @@ imports="
 	    <%=rejectConnName%>.errorMessage = mainEx_<%=cid%>.getMessage();
 	    <%=rejectConnName%>.errorCode = "";
 <%
-            } else {
+		    	} else {
 %>
         // handling exception as std err
         System.err.println(mainEx_<%=cid%>.getMessage());
 <%
-            }
+            	}
 %>
             
 	}
@@ -190,19 +185,19 @@ imports="
 		org.apache.chemistry.opencmis.commons.data.PropertyData<?> propertyData_<%=cid %> = null;
 <%
 					
-			if (firstConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {//6
-		
-				List<IMetadataColumn> columns=metadata.getListColumns();
-				int columnSize = columns.size();
-				for (int i=0;i<columnSize;i++) {//7
-					IMetadataColumn column=columns.get(i);
-					String typeToGenerate = JavaTypesManager.getTypeToGenerate(column.getTalendType(), column.isNullable());
-					JavaType javaType = JavaTypesManager.getJavaTypeFromId(column.getTalendType());
-					String patternValue = column.getPattern() == null || column.getPattern().trim().length() == 0 ? null : column.getPattern();
-					
-					String cmisPropertyName = inputMapping.get(column.getLabel());
+				if (firstConn != null && firstConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {//6
+			
+					List<IMetadataColumn> columns=metadata.getListColumns();
+					int columnSize = columns.size();
+					for (int i=0;i<columnSize;i++) {//7
+						IMetadataColumn column=columns.get(i);
+						String typeToGenerate = JavaTypesManager.getTypeToGenerate(column.getTalendType(), column.isNullable());
+						JavaType javaType = JavaTypesManager.getJavaTypeFromId(column.getTalendType());
+						String patternValue = column.getPattern() == null || column.getPattern().trim().length() == 0 ? null : column.getPattern();
+						
+						String cmisPropertyName = inputMapping.get(column.getLabel());
 
-					if (cmisPropertyName != null) {
+						if (cmisPropertyName != null) {
 %>
 		            			 
 		propertyData_<%=cid %> = result_<%=cid %>.getPropertyById("<%=cmisPropertyName %>");
@@ -212,64 +207,65 @@ imports="
 			Object propertyValue_<%=cid %> = propertyData_<%=cid %>.getFirstValue();
 			if (propertyValue_<%=cid %> != null){
 <%
-					if(javaType == JavaTypesManager.STRING || javaType == JavaTypesManager.OBJECT) { //String or Object
+							if(javaType == JavaTypesManager.STRING || javaType == JavaTypesManager.OBJECT) { //String or Object
 %>
 				<%=firstConnName %>.<%=column.getLabel() %> = propertyValue_<%=cid %>.toString();
 <%
-					} else if(javaType == JavaTypesManager.DATE) { //Date
+							} else if(javaType == JavaTypesManager.DATE) { //Date
 %>
 				<%=firstConnName %>.<%=column.getLabel() %> = ((java.util.Calendar)propertyValue_<%=cid %>).getTime();
 <%
-					} else if(javaType == JavaTypesManager.BYTE_ARRAY) { //byte[]
+							} else if(javaType == JavaTypesManager.BYTE_ARRAY) { //byte[]
 %>
 				<%=firstConnName %>.<%=column.getLabel() %> = util_<%=cid %>.getFieldbyOrder(propertyValue_<%=cid %>.toString()).getBytes();
 <%
-					} else { //others
+							} else { //others
 %>				
 				<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_<%= typeToGenerate %>(propertyValue_<%=cid %>.toString());
 <%
-					}
+							}
 %>
 			}else{
 				<%=firstConnName %>.<%=column.getLabel() %> = null;
 			}
 		}else{
 <%
-					}//End if (cmisPropertyName != null) 
+						}//End if (cmisPropertyName != null) 
 %>
 		
 			//Fill the property with its default value
 			<%=firstConnName %>.<%=column.getLabel() %> = <%=JavaTypesManager.getDefaultValueFromJavaType(typeToGenerate)%>;
 <%
-					if (cmisPropertyName != null) { 
+						if (cmisPropertyName != null) { 
 %>
 		}
 <%
-					}//End if (cmisPropertyName != null) 
+						}//End if (cmisPropertyName != null) 
 %>
 					
 					
 <%
-				} //7
-			}//6
+					} //7
+				}//6
+					
+				List< ? extends IConnection> conns = node.getOutgoingSortedConnections();
 				
-				
-			if (conns.size()>1) {
-				for (int i=1;i<conns.size();i++) {
-					IConnection conn2 = conns.get(i);
-					if ((conn2.getName().compareTo(firstConnName)!=0)&&(conn2.getName().compareTo(rejectConnName)!=0)
-					&&(conn2.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA))) {
-				    	for (IMetadataColumn column: metadata.getListColumns()) {
+				if (conns.size()>1) {
+					for (int i=1;i<conns.size();i++) {
+						IConnection conn2 = conns.get(i);
+						if ((conn2.getName().compareTo(firstConnName)!=0)&&(conn2.getName().compareTo(rejectConnName)!=0)
+						&&(conn2.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA))) {
+					    	for (IMetadataColumn column: metadata.getListColumns()) {
 %>
 	      			<%=conn2.getName() %>.<%=column.getLabel() %> = <%=firstConnName %>.<%=column.getLabel() %>;
 <%
-					 	}
+						 	}
+						}
 					}
 				}
-			}
-						
-			if (downloadContent)
-			{//8
+					
+				if (downloadContent)
+				{//8
 			
 %>
 		//Save the document content
@@ -280,8 +276,9 @@ imports="
 		
 		org.talend.cmis.helper.CmisHelper.extractCMISObjectContent(cmisObject_<%=cid %>, <%=contentPath %>);
 <%				
-			}//8
-  		}//5
-	}//4
+				}//8
+			}//3
+		}//2
+	}//1
 %>
     
