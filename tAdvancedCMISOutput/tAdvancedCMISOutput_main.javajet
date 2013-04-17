@@ -147,7 +147,7 @@ imports="
 								
 			if(function.equals("CREATE")){
 
-					if(baseTypeId.equals("cmis:document")){
+				if(baseTypeId.equals("cmis:document")){
 %>
 
 			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CmisHelper.createDocument(session_<%=cid %>,
@@ -187,6 +187,11 @@ imports="
 				keys_<%=cid %>,
 				contentStreamFilePath_<%=cid %>);
 				
+			nb_line_<%=cid %>++;
+<%
+			}else if(function.equals("DELETE")){
+%>
+			org.talend.cmis.helper.CmisHelper.deleteCmisObject(session_<%=cid %>,keys_<%=cid %>,targetFolderPath_<%=cid %>);
 			nb_line_<%=cid %>++;
 <%
 			}
