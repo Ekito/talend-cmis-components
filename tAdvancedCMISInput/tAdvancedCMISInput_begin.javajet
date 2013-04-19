@@ -80,15 +80,15 @@ imports="
 				}else if ("webservices".equals(bindingType))
 				{
 %>
-	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_ACL_SERVICE, "<%=webServicesUrl%>/ACLService?wsdl");
-	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_DISCOVERY_SERVICE, "<%=webServicesUrl%>/DiscoveryService?wsdl");
-	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_MULTIFILING_SERVICE, "<%=webServicesUrl%>/MultiFilingService?wsdl");
-	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_NAVIGATION_SERVICE, "<%=webServicesUrl%>/NavigationService?wsdl");
-	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_OBJECT_SERVICE, "<%=webServicesUrl%>/ObjectService?wsdl");
-	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_POLICY_SERVICE, "<%=webServicesUrl%>/PolicyService?wsdl");
-	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_RELATIONSHIP_SERVICE, "<%=webServicesUrl%>/RelationshipService?wsdl");
-	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_REPOSITORY_SERVICE, "<%=webServicesUrl%>/RepositoryService?wsdl");
-	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_VERSIONING_SERVICE, "<%=webServicesUrl%>/VersioningService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_ACL_SERVICE, <%=webServicesUrl%> + "/ACLService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_DISCOVERY_SERVICE, <%=webServicesUrl%> + "/DiscoveryService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_MULTIFILING_SERVICE, <%=webServicesUrl%> + "/MultiFilingService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_NAVIGATION_SERVICE, <%=webServicesUrl%> + "/NavigationService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_OBJECT_SERVICE, <%=webServicesUrl%> + "/ObjectService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_POLICY_SERVICE, <%=webServicesUrl%> + "/PolicyService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_RELATIONSHIP_SERVICE, <%=webServicesUrl%> + "/RelationshipService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_REPOSITORY_SERVICE, <%=webServicesUrl%> + "/RepositoryService?wsdl");
+	parameters_<%=cid %>.put(org.apache.chemistry.opencmis.commons.SessionParameter.WEBSERVICES_VERSIONING_SERVICE, <%=webServicesUrl%> + "/VersioningService?wsdl");
 <%
 				}	
 %>
