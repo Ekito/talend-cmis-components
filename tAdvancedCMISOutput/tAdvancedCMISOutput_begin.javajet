@@ -28,7 +28,6 @@ imports="
 	    	String bindingType = ElementParameterParser.getValue(node, "__CMIS_BINDING_TYPE__");        
 		    String atomPubUrl = ElementParameterParser.getValue(node, "__CMIS_ATOMPUB_URL__");
 		    String webServicesUrl = ElementParameterParser.getValue(node, "__CMIS_WEBSERVICES_URL__");
-		    webServicesUrl = webServicesUrl.replaceAll("\"", "");
 			
 			String username = ElementParameterParser.getValue(node, "__CMIS_USER_LOGIN__");
 			String password = ElementParameterParser.getValue(node, "__CMIS_USER_PASSWORD__");
