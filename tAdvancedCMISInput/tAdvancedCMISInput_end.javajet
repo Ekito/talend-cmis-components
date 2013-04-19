@@ -1,6 +1,7 @@
 <%@ jet 
 imports="
     	org.talend.core.model.process.INode
+    	org.talend.core.model.process.ElementParameterParser 
     	org.talend.core.model.metadata.IMetadataTable 
 		org.talend.core.model.process.IConnection    
 		org.talend.designer.codegen.config.CodeGeneratorArgument
@@ -11,6 +12,8 @@ imports="
 	CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
 	INode node = (INode)codeGenArgument.getArgument();
 	String cid = node.getUniqueName();
+	
+	String function = ElementParameterParser.getValue(node, "__FUNCTION__");
 	
 	//Test if some metadata exists. Otherwise, no java code generation
     List<IMetadataTable> metadatas = node.getMetadataList();
@@ -23,12 +26,15 @@ imports="
 
 			//If no main outgoing connections, then no java code generation			
 			if(mainConns != null && mainConns.size() > 0) {//3
+				if (function.equals("QUERY"))
+				{
 %>
 	}//End For Each Result
 	
  	globalMap.put("<%=cid %>_NB_LINE",nb_line_<%=cid %>);                
 
 <%
+				}
 			}//3
 		}//2
 	}//1

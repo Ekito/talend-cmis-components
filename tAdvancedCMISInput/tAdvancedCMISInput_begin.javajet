@@ -38,6 +38,8 @@ imports="
 		contentPath = ElementParameterParser.getValue(node, "__CONTENT_PATH__");
 	}
 	
+	String function = ElementParameterParser.getValue(node, "__FUNCTION__");
+	
     //Test if some metadata exists. Otherwise, no java code generation
     List<IMetadataTable> metadatas = node.getMetadataList();
 
@@ -117,7 +119,9 @@ imports="
 					inputMapping.put(schemaPropertyId, cmisPropertyId);
 				}
 				
-		    	String query = ElementParameterParser.getValue(node, "__QUERY__");
+				if (function.equals("QUERY"))
+				{
+		    		String query = ElementParameterParser.getValue(node, "__QUERY__");
 	    	
 	   
 %>
@@ -138,12 +142,21 @@ imports="
 	for (java.util.Iterator<org.apache.chemistry.opencmis.client.api.QueryResult> resultIterator_<%=cid %> = results_<%=cid%>.iterator(); resultIterator_<%=cid %>.hasNext();) {
 	
 		org.apache.chemistry.opencmis.client.api.QueryResult result_<%=cid %> = (org.apache.chemistry.opencmis.client.api.QueryResult) resultIterator_<%=cid %>.next();
+<%
+				}else if (function.equals("GET_OBJECT_BY_PATH"))
+				{
+					String objectPath = ElementParameterParser.getValue(node, "__OBJECT_PATH__");
+%>
+		org.apache.chemistry.opencmis.client.api.CmisObject cmisObject_<%=cid %> = org.talend.cmis.helper.CmisHelper.getObjectByPath(session_<%=cid %>, <%=objectPath %>);
+<%
+				}
+%>
 		nb_line_<%=cid %>++;
 
         <%=firstConnName %> = new <%=firstConnName %>Struct();
 		org.apache.chemistry.opencmis.commons.data.PropertyData<?> propertyData_<%=cid %> = null;
 <%
-					
+				
 				if (firstConn != null && firstConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {//6
 			
 					List<IMetadataColumn> columns=metadata.getListColumns();
@@ -157,10 +170,18 @@ imports="
 						String cmisPropertyName = inputMapping.get(column.getLabel());
 
 						if (cmisPropertyName != null) {
+							if (function.equals("QUERY")){
 %>
 		            			 
 		propertyData_<%=cid %> = result_<%=cid %>.getPropertyById("<%=cmisPropertyName %>");
-		
+<%
+							}else if (function.equals("GET_OBJECT_BY_PATH"))
+							{
+%>
+		propertyData_<%=cid %> = cmisObject_<%=cid %>.getProperty("<%=cmisPropertyName %>");
+<%
+							}
+%>
 		if (propertyData_<%=cid %> != null){
 			
 			Object propertyValue_<%=cid %> = propertyData_<%=cid %>.getFirstValue();
@@ -225,14 +246,18 @@ imports="
 					
 				if (downloadContent)
 				{//8
-			
+					if (function.equals("QUERY"))
+					{
 %>
-		//Save the document content
 		propertyData_<%=cid %> = result_<%=cid %>.getPropertyById("cmis:objectId");
+
 		String objectIdString_<%=cid %> = (String)propertyData_<%=cid %>.getFirstValue();
 		org.apache.chemistry.opencmis.client.api.ObjectId objectId_<%=cid %> = session_<%=cid %>.createObjectId(objectIdString_<%=cid %>);
 		org.apache.chemistry.opencmis.client.api.CmisObject cmisObject_<%=cid %> = session_<%=cid %>.getObject(objectId_<%=cid %>);
-		
+<%
+					}
+%>
+		//Save the document content		
 		org.talend.cmis.helper.CmisHelper.extractCMISObjectContent(cmisObject_<%=cid %>, <%=contentPath %>);
 <%				
 				}//8
