@@ -140,8 +140,8 @@ imports="
 			if (baseTypeId.equals("cmis:document"))
 			{
 %>
-			String contentStreamFilePath_<%=cid %> = <%=inConn.getName() %>.<%=contentFilePathColumn %>;
-			
+			String contentStreamURLStr_<%=cid %> = <%=inConn.getName() %>.<%=contentFilePathColumn %>;
+			java.net.URL contentStreamURL_<%=cid %> = new java.net.URL(contentStreamURLStr_<%=cid %>);
 <%
 			}
 								
@@ -154,7 +154,7 @@ imports="
 				targetFolderPath_<%=cid %>,
 				properties_<%=cid %>,
 				keys_<%=cid %>,
-				contentStreamFilePath_<%=cid %>);
+				contentStreamURL_<%=cid %>);
 			
 			nb_line_<%=cid %>++;
 <%
@@ -175,7 +175,7 @@ imports="
 				targetFolderPath_<%=cid %>,
 				properties_<%=cid %>,
 				keys_<%=cid %>,
-				contentStreamFilePath_<%=cid %>);
+				contentStreamURL_<%=cid %>);
 				
 			nb_line_<%=cid %>++;
 <%
@@ -185,7 +185,7 @@ imports="
 				targetFolderPath_<%=cid %>,
 				properties_<%=cid %>,
 				keys_<%=cid %>,
-				contentStreamFilePath_<%=cid %>);
+				contentStreamURL_<%=cid %>);
 				
 			nb_line_<%=cid %>++;
 <%
