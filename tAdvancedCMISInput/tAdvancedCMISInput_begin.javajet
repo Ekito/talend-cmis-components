@@ -105,6 +105,9 @@ imports="
 	//Create a new CMIS session
 	org.apache.chemistry.opencmis.client.api.SessionFactory f_<%=cid %> = org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl.newInstance();
 	org.apache.chemistry.opencmis.client.api.Session session_<%=cid %> = f_<%=cid %>.createSession(parameters_<%=cid %>);
+	
+	org.talend.cmis.helper.CmisSessionManager sessionManager_<%=cid %> = new org.talend.cmis.helper.CmisSessionManager(session_<%=cid %>);
+	
 <%
 		
 		    	List<Map<String, String>> propertyMappings = (List<Map<String,String>>)ElementParameterParser.getObjectValue(node, "__PROPERTY_MAPPING__");
@@ -146,7 +149,7 @@ imports="
 				{
 					String objectPath = ElementParameterParser.getValue(node, "__OBJECT_PATH__");
 %>
-		org.apache.chemistry.opencmis.client.api.CmisObject cmisObject_<%=cid %> = org.talend.cmis.helper.CmisHelper.getObjectByPath(session_<%=cid %>, <%=objectPath %>);
+		org.apache.chemistry.opencmis.client.api.CmisObject cmisObject_<%=cid %> = sessionManager_<%=cid %>.getObjectByPath(<%=objectPath %>);
 <%
 				}
 %>
@@ -257,7 +260,7 @@ imports="
 					}
 %>
 		//Save the document content		
-		org.talend.cmis.helper.CmisHelper.extractCMISObjectContent(cmisObject_<%=cid %>, <%=contentPath %>);
+		sessionManager_<%=cid %>.extractCMISObjectContent(cmisObject_<%=cid %>, <%=contentPath %>);
 <%				
 				}//8
 			}//3

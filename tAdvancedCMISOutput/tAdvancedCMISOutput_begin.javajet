@@ -82,7 +82,9 @@ imports="
 	//Create a new CMIS session
 	org.apache.chemistry.opencmis.client.api.SessionFactory f_<%=cid %> = org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl.newInstance();
 	org.apache.chemistry.opencmis.client.api.Session session_<%=cid %> = f_<%=cid %>.createSession(parameters_<%=cid %>);
-	
+
+	org.talend.cmis.helper.CmisSessionManager sessionManager_<%=cid %> = new org.talend.cmis.helper.CmisSessionManager(session_<%=cid %>);
+		
 	//TODO Manage cache as an option in the component
 	//org.apache.chemistry.opencmis.client.api.OperationContext operationContext_<%=cid %> = session_<%=cid %>.createOperationContext();
 	//operationContext_<%=cid %>.setCacheEnabled(false);
@@ -98,7 +100,6 @@ imports="
 	String targetFolderPath_<%=cid %> = <%=targetFolderDefault %>;
 <%           
 			}
-
   		}//2
 	}//1
 %>

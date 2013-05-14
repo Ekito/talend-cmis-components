@@ -150,8 +150,7 @@ imports="
 				if(baseTypeId.equals("cmis:document")){
 %>
 
-			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CmisHelper.createDocument(session_<%=cid %>,
-				targetFolderPath_<%=cid %>,
+			org.apache.chemistry.opencmis.client.api.CmisObject result = sessionManager_<%=cid %>.createDocument(targetFolderPath_<%=cid %>,
 				properties_<%=cid %>,
 				keys_<%=cid %>,
 				contentStreamURL_<%=cid %>);
@@ -160,8 +159,7 @@ imports="
 <%
 				}else if (baseTypeId.equals("cmis:folder")){
 %>
-			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CmisHelper.createFolder(session_<%=cid %>,
-				targetFolderPath_<%=cid %>,
+			org.apache.chemistry.opencmis.client.api.CmisObject result = sessionManager_<%=cid %>.createFolder(targetFolderPath_<%=cid %>,
 				properties_<%=cid %>,
 				keys_<%=cid %>,
 				<%=createFolderRecursive%>);
@@ -171,8 +169,7 @@ imports="
 				}
 			}else if(function.equals("UPDATE")){
 %>
-			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CmisHelper.updateDocument(session_<%=cid %>,
-				targetFolderPath_<%=cid %>,
+			org.apache.chemistry.opencmis.client.api.CmisObject result = sessionManager_<%=cid %>.updateDocument(targetFolderPath_<%=cid %>,
 				properties_<%=cid %>,
 				keys_<%=cid %>,
 				contentStreamURL_<%=cid %>);
@@ -181,8 +178,7 @@ imports="
 <%
 			}else if(function.equals("CREATE_OR_UPDATE")){
 %>
-			org.apache.chemistry.opencmis.client.api.CmisObject result = org.talend.cmis.helper.CmisHelper.createOrUpdateDocument(session_<%=cid %>,
-				targetFolderPath_<%=cid %>,
+			org.apache.chemistry.opencmis.client.api.CmisObject result = sessionManager_<%=cid %>.createOrUpdateDocument(targetFolderPath_<%=cid %>,
 				properties_<%=cid %>,
 				keys_<%=cid %>,
 				contentStreamURL_<%=cid %>);
@@ -191,7 +187,7 @@ imports="
 <%
 			}else if(function.equals("DELETE")){
 %>
-			org.talend.cmis.helper.CmisHelper.deleteCmisObject(session_<%=cid %>,keys_<%=cid %>,targetFolderPath_<%=cid %>);
+			sessionManager_<%=cid %>.deleteCmisObject(keys_<%=cid %>,targetFolderPath_<%=cid %>);
 			nb_line_<%=cid %>++;
 <%
 			}

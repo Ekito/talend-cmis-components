@@ -13,7 +13,7 @@
 -->
 <COMPONENT>
 
-	<HEADER PLATEFORM="ALL" SERIAL="" VERSION="0.2" STATUS="ALPHA"
+	<HEADER PLATEFORM="ALL" SERIAL="" VERSION="0.3" STATUS="ALPHA"
 		COMPATIBILITY="ALL" AUTHOR="Julien Boulay - www.ekito.fr"
 		RELEASE_DATE="20121219" STARTABLE="false" DATA_AUTO_PROPAGATE="true"
 		HAS_CONDITIONAL_OUTPUTS="true" EXTENSION="org.talend.designer.cmis">
@@ -182,7 +182,7 @@
 
 	<CODEGENERATION>
 		<IMPORTS>
-			<IMPORT NAME="cmis-helper" MODULE="cmis-helper-0.2.0.jar" REQUIRED="true" />
+			<IMPORT NAME="cmis-helper" MODULE="cmis-helper-0.3.0.jar" REQUIRED="true" />
 			<IMPORT NAME="activation" MODULE="activation-1.1.jar" REQUIRED="true" />
 			<IMPORT NAME="chemistry-opencmis-client-api" MODULE="chemistry-opencmis-client-api-0.7.0.jar" REQUIRED="true" />
 			<IMPORT NAME="chemistry-opencmis-client-bindings" MODULE="chemistry-opencmis-client-bindings-0.7.0.jar" REQUIRED="true" />
