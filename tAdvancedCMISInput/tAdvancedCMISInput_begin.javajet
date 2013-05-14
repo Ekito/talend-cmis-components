@@ -124,6 +124,8 @@ imports="
 				if (function.equals("QUERY"))
 				{
 		    		String query = ElementParameterParser.getValue(node, "__QUERY__");
+		    		
+		    		boolean isAllVersions = Boolean.valueOf(ElementParameterParser.getValue(node, "__ALL_VERSIONS__"));
 	    	
 	   
 %>
@@ -132,7 +134,7 @@ imports="
 		
 	try
 	{
-		results_<%=cid %> = session_<%=cid %>.query(<%=query %>, false);
+		results_<%=cid %> = session_<%=cid %>.query(<%=query %>, <%=isAllVersions %>);
 		
 	} catch (Exception mainEx_<%=cid%>) {
 	    
